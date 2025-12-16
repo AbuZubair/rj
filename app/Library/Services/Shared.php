@@ -30,13 +30,44 @@ class Shared
         }
     }
 
+    public function getParamQuery($param, $param1 = null, $param2 = null){
+        $query = DB::table('parameter')
+            ->where('param',$param)
+            ->where('is_active','Y')
+            ->orderBy('label', 'asc');
+        if($param1 != null){
+            $query->where('param1', $param1);
+        }
+        if($param2 != null){
+            $query->where('param2', $param2);
+        }
+        return $query;
+    }
+
     public function getParamDropdown($param)
     {
-        $data = DB::table('parameter')
-        ->where('param',$param)
-        ->where('is_active','Y')
-        ->get()->toArray();
+        $data = $this->getParamQuery($param)->get()->toArray();
         return $data;
+    }
+
+    public function getTahunAjaran()
+    {
+        $data = $this->getParamQuery('th_ajaran')->first();
+        return $data->value;
+    }
+
+    static public function getTahunAjaranStatic()
+    {
+        $self = new Shared();
+        $data = $self->getParamQuery('th_ajaran')->first();
+        return $data ? $data->value : null;
+    }
+
+    static public function getLastAngkatan($tingkat)
+    {
+        $self = new Shared();
+        $data = $self->getParamQuery('angkatan_terakhir', $tingkat)->first();
+        return $data->value;
     }
 
     public function getMonthName($month)

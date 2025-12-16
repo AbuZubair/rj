@@ -1,4 +1,4 @@
-@extends('layouts.admin', ['activePage' => 'iuran', 'titlePage' => __('Iuran Anggota')])
+@extends('layouts.admin', ['activePage' => 'iuran', 'titlePage' => __('Iuran Siswa')])
 
 @section('content')
 <div class="content">
@@ -9,30 +9,48 @@
           <form class="searchForm">
             <div class="card-body row">
               <div class="col-sm-12 col-md-6 align-items-center">
-                <label class="col-sm-12 col-form-label">{{ __('Bulan') }}</label>
+                <label class="col-sm-12 col-form-label">{{ __('Tanggal Bayar') }}</label>
                 <div class="col-sm-12">
                   <div class="form-group">                      
-                    <select class="form-control" name="searchMonth" id="searchMonth">
-                      <option value="" disabled selected>Select your option</option>
-                    </select>
+                    <input type="date" class="form-control" id="searchDate" name="searchDate">
                   </div>
                 </div>
-              </div>
-              <div class="col-sm-12 col-md-6 align-items-center">
-                <label class="col-sm-12 col-form-label">{{ __('Tahun') }}</label>
-                <div class="col-sm-12">
-                  <div class="form-group">                      
-                    <select class="form-control" name="searchYear" id="searchYear">
-                      <option value="" disabled selected>Select your option</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="col-sm-12 col-md-6 align-items-center">
+              </div> 
+              <div class="col-sm-12 col-md-4 align-items-center">
                 <label class="col-sm-12 col-form-label">{{ __('Type') }}</label>
                 <div class="col-sm-12">
                   <div class="form-group">                      
                     <select class="form-control" name="searchType" id="searchType">
+                      <option value="" disabled selected>Select your option</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12 col-md-4 align-items-center">
+                <label class="col-sm-12 col-form-label">{{ __('Jenjang') }}</label>
+                <div class="col-sm-12">
+                  <div class="form-group">                      
+                    <select class="form-control" name="searchJenjang" id="searchJenjang">
+                      <option value="" disabled selected>Select your option</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12 col-md-4 align-items-center">
+                <label class="col-sm-12 col-form-label">{{ __('Kelas') }}</label>
+                <div class="col-sm-12">
+                  <div class="form-group">                      
+                    <select class="form-control" name="searchTingkat" id="searchTingkat">
+                      <option value="" disabled selected>Select your option</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-12 col-md-4 align-items-center">
+                <label class="col-sm-12 col-form-label">{{ __('Tahun Ajaran') }}</label>
+                <div class="col-sm-12">
+                  <div class="form-group">                      
+                    <select class="form-control" name="searchTahunAjaran" id="searchTahunAjaran">
                       <option value="" disabled selected>Select your option</option>
                     </select>
                   </div>
@@ -49,11 +67,13 @@
             <thead>
                 <tr>
                     <th class="text-center r-sort"><input class="ml-md-0 ml-4" type="checkbox" id="selectAll" value="selectAll" onClick="toggle(this)"/></th>
-                    <th>No Anggota</th>
+                    <th>NIS</th>
                     <th>Nama</th>
-                    <th>Bulan</th>
-                    <th>Tahun</th>
+                    <th>Jenjang</th>
+                    <th>Kelas</th>
+                    <th>Tanggal Bayar</th>
                     <th>Tipe Iuran</th>
+                    <!-- <th>Tahun Ajaran</th> -->
                     <th>Nominal</th>
                     <th>Status</th>                   
                     <th>Action</th>
@@ -81,75 +101,37 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm">      
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="card">
-          <div class="card-body">
-            <p>{{ __('Set Status') }}</p>
-            <div>
-              <button type="button" class="btn btn-info" onClick="updateStatus(1)">{{ __('Bayar') }}</button>
-              <button type="button" class="btn btn-danger" onClick="updateStatus(0)">{{ __('Belum Bayar') }}</button>
-            </div>
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header pl-2 pb-0">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="thrModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">      
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="card">
-          <div class="card-header">
-            {{ __('Set Tabungan Hari Raya') }}
-          </div>
-          <div class="card-body">
-            <!-- <p>{{ __('Set Tabungan Hari Raya') }}</p> -->
-            <div>
-              <div class="form-row">
-                <div class="form-group col-md-12">
-                  <label class="col-sm-6 col-form-label">{{ __('Nominal*') }}</label>
-                  <div class="col-sm-12">
-                    <div class="form-group{{ $errors->has('thr') ? ' has-danger' : '' }}">
-                      <input class="form-control{{ $errors->has('thr') ? ' is-invalid' : '' }}" data-type="currency" name="thr" id="thr" type="text" placeholder="{{ __('Nominal') }}" value="{{ old('thr', isset($data) ? $data['thr'] : '') }}" />
-                    </div>
+          <div class="modal-body modal-dialog-scrollable pt-0">
+             <div class="modal-container">
+                <div class="card">
+                  <div class="card-header text-center">
+                    <h5 class="mb-0">Iuran detail:</h5>
                   </div>
-                </div>
-
-                <div class="form-group col-md-12">
-                  <label class="col-sm-12 col-form-label">{{ __('Rutin Bulanan?*') }}</label>
-                  <div class="col-sm-8">
-                    <div class="form-check form-check-radio form-check-inline">
-                      <label class="form-check-label">
-                        <input class="form-check-input" type="radio" name="is_thr_monthly" id="is_thr_monthly1" value="N" data-value="N" checked> {{ __('N') }}
-                        <span class="circle">
-                            <span class="check"></span>
-                        </span>
-                      </label>
-                    </div>
-                    <div class="form-check form-check-radio form-check-inline">
-                      <label class="form-check-label">
-                        <input class="form-check-input" type="radio" name="is_thr_monthly" id="is_thr_monthly2" value="Y" data-value="Y" > {{ __('Y') }}
-                        <span class="circle">
-                            <span class="check"></span>
-                        </span>
-                      </label>
-                    </div>
+                  <div class="card-body">
+                    <table class="table view-iuran-detail">
+                      <thead>
+                        <tr>
+                          <th>No.</th>
+                          <th>Bulan</th>
+                          <th>Tahun</th>
+                          <th>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
                   </div>
                 </div>
               </div>
-            </div>
           </div>
-          <div class="card-footer ml-auto mr-auto">
-            <button type="button" class="btn btn-warning mr-2" data-dismiss="modal">Close</button>
-            <button type="button" class="btn button-link" onClick="setThr()">{{ __('Save') }}</button>
-          </div>
-        </div>
       </div>
-    </div>
   </div>
 </div>
 @endsection
@@ -161,11 +143,54 @@
   const month = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
    $(document).ready(function(){
        
-    getYearList();
+    $('#nis').select2({
+      ajax: {
+        url: '{{url("master/kesiswaan/dropdown")}}',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return {
+            q: params.term, // search term
+          };
+        },
+        processResults: function (data, params) {
+          return {
+            results: data.data
+          };
+        },
+        cache: true
+      },
+      placeholder:"Select your option",
+      minimumInputLength: 2,
+      templateResult: formatSiswaSelection,
+      templateSelection: formatSiswaValueSelection,
+      dropdownParent: $(".nis-wrapper")
+    }).on('select2:select', function (e) {           
+      var data = e.params.data;
+      onSiswaSelected(data);
+    });
+
+    $('#nis').on('change', function (e) {
+      if($(".select2-selection__placeholder").length > 0){
+        $(".select2-selection__placeholder").each(function () {
+            $(this).text('Select your option');
+        });
+      }
+
+      var data = $('#nis').val();
+      if(data == null || data == ''){
+        $('#jenjang').val('');
+        $('#tingkat_kelas').val('');
+        return;
+      }else{
+        $('#jenjang').val(data.jenjang);
+        $('#tingkat_kelas').val(data.tingkat_kelas);
+      }
+    });
+
+   
+    $('#searchTingkat').select2();
     getDropdown();
-    getAnggotaDropdown();
-    // getIuranList('0,1');
-    if(role==1)checkThr()
 
     for(var i=0;i<month.length;i++){
       $('#searchMonth').append($('<option>', { 
@@ -182,29 +207,42 @@
       });
     }
 
-    $('#type').on('change', function() {        
-      var data = $('#type').val();
-      if (data=='2') {
-        if($('#no_anggota').val() == null){
-          showNotification("Silahkan pilih anggota terlebih dahulu", 'danger');
+    $('#searchJenjang').on('change', function() {
+      var data = $('#searchJenjang').val();
+      if(data != null && data != ''){
+        let tingkatOptions = {
+          'sd': [1,2,3,4,5,6],
+          'smp': [7,8,9],
+          'sma': [10,11,12],
+          'paud': ['tk_a', 'tk_b'],
+        };
+        $('#searchTingkat').empty().append('<option value="" disabled selected>Select your option</option>');
+        if (tingkatOptions[data]) {
+          tingkatOptions[data].forEach(function(val) {
+            // Convert to string for consistency
+            val = val.toString();
+            let label = `Kelas ${val}`;
+            if(val.startsWith('tk_')) {
+              label = val.toUpperCase().replace('_', ' ');
+            }
+            $('#searchTingkat').append($('<option>', { value: val, text: label }));
+          });
         }
-        $('.iuran-list').show();
-      } else {
-        $('.iuran-list').hide();
-        $('#reference').val('').trigger('change');
-      }
-    });
-
-    $('#reference').on('change', function() {
-      var data = $('#reference').val();
-      if(data!=null && !$("#id").val()){
-        getAmount(data)
+        $('#searchTingkat').trigger('change');
       }      
     });
 
-    $('input[name=is_thr_monthly]').change(function() {    
-      let that = this; 
-      $(that).val($(that).attr('data-value'))
+    $('#type').on('change', function() {
+      var data = $('#type').val();
+      if(data == null || data == '' || data == 'spp'){
+        $('.th_ajaran_form').hide();
+        $('#th_ajaran').attr('required', false);
+      }else{
+        // Show the th_ajaran_form only for non-spp types
+        $('.th_ajaran_form').show();
+        // Added required attribute for th_ajaran
+        $('#th_ajaran').attr('required', true);
+      }      
     });
 
     table = $('.yajra-datatable').DataTable({
@@ -214,9 +252,11 @@
         ajax: {
             url: "{{ route('iuran.list') }}",
             data: function ( d ) {        
-                d.month = $('select[name=searchMonth]').val();
-                d.year = $('select[name=searchYear]').val();
+                d.date = $('select[name=searchDate]').val();
                 d.type = $('select[name=searchType]').val();
+                d.jenjang = $('select[name=searchJenjang]').val();
+                d.tingkat = $('select[name=searchTingkat]').val();
+                d.tahun_ajaran = $('select[name=searchTahunAjaran]').val();
             }, 
             type: 'GET',
         },
@@ -226,14 +266,13 @@
               },
               
             },
-            {data: 'no_anggota', name: 'no_anggota'},
+            {data: 'nis', name: 'nis'},
             {data: 'fullname', name: 'fullname'},
-            {data: 'month', render:function(data,type,full,meta){
-                return month[parseInt(data)-1]
-              }
-            },
-            {data: 'year', name: 'year'},
+            {data: 'jenjang', name: 'jenjang'},
+            {data: 'tingkat_kelas', name: 'tingkat_kelas'},
+            {data: 'paid_date', name: 'paid_date'},
             {data: 'type_iuran', name: 'type_iuran'},
+            // {data: 'th_ajaran', name: 'th_ajaran'},
             {data: 'amount', render:function(data,type,full,meta){
                 if(data)return formatCurrency(data)
                   return '-'
@@ -244,7 +283,14 @@
               }
             },
             {data:null,render:function(data,type,full,meta){
-                return (role!=1)?'<button class="btn btn-sm btn-success" onClick="edit('+data.id+')">Edit</button>':'-';    
+                let html = '<div class="d-flex">'
+                html += '<button class="btn btn-sm btn-success" onClick="edit('+data.id+')"><i class="material-icons">edit</i></button>';
+                if(data.type == 'spp'){
+                  html += '<button class="btn btn-sm btn-info" onClick="view('+data.id+')"><i class="material-icons">visibility</i></button>';
+                }
+                html += '<button class="btn btn-sm btn-primary" onClick="printReceipt('+data.nis+')"><i class="material-icons">print</i></button>';
+                html += '</div>'
+                return html;
               }
             },
         ],
@@ -260,51 +306,31 @@
           {
             extend: 'excel',
             exportOptions: {
-              columns: [ 1, 2, 3, 4, 5, 6],
-              total_index: [5]
+              columns: [ 0, 1, 2, 3, 4, 5, 6, 7]
             },
-            title: 'KOPERASI KARYAWAN PRASADHA MAKMUR SEJAHTERA Iuran_'+getDate()
+            title: 'Iuran_'+getDate()
           }
         ],
         dom: 'B<"toolbar"><"info-thr">lfrtip'
     });
 
     var btn;
-    if(role!=1){
-      btn = '<div><button class="btn btn-primary" onClick="add()"><i class="material-icons">add</i> Add</button>'
-      btn += '<button class="btn btn-danger" onClick="deleteRow()"><i class="material-icons">delete</i> Delete</button>'   
-      // btn += '<button class="btn btn-warning" onClick="update()"><i class="material-icons">add_task</i> Update Status</button></div>'
-      // btn += '<button class="btn btn-primary" onClick="monthlyPay()"><i class="material-icons">playlist_add_check</i> Potong Bulan <strong>'+month[(new Date).getMonth()]+'</strong></button></div>'        
-      $("div.toolbar").addClass('d-flex flex-column flex-md-row justify-content-start mb-4 mt-4').html(btn);
-      $("div.dt-buttons").addClass('float-right')
-    }else{
-      btn = '<div><button class="btn btn-primary" onClick="addThr()">Tabungan Hari Raya</button>'
-      $("div.toolbar").addClass('d-flex flex-column flex-md-row justify-content-between mt-4').html(btn);
-      $("div.info-thr").addClass('mb-4 thin-text');
-      $("div.dt-buttons").addClass('d-none');
-    }
+    btn = '<div><button class="btn btn-primary" onClick="add()"><i class="material-icons">add</i> Add</button>'
+    btn += '<button class="btn btn-danger" onClick="deleteRow()"><i class="material-icons">delete</i> Delete</button></div>'   
+    // btn += '<button class="btn btn-warning" onClick="update()"><i class="material-icons">add_task</i> Update Status</button></div>'
+    // btn += '<button class="btn btn-primary" onClick="monthlyPay()"><i class="material-icons">playlist_add_check</i> Potong Bulan <strong>'+month[(new Date).getMonth()]+'</strong></button></div>'        
+    $("div.toolbar").addClass('d-flex flex-column flex-md-row justify-content-start mb-4 mt-4').html(btn);
+    $("div.dt-buttons").addClass('float-right')
     
   });  
 
-  function getYearList() {
-    //get list year from 2016 until current year plus one
-    var year = new Date().getFullYear();
-    var yearList = [];
-    for(var i=2016;i<=year;i++){
-      $('#searchYear').append($('<option>', { 
-        value: i,
-        text : i 
-      }));
-      $('#year').append($('<option>', { 
-        value: i,
-        text : i 
-      }));
-      $('#searchYear').select2();
-      $('#year').select2({
-          dropdownParent: $("#iuranModal")
-      });
-    }
- 
+  function onSiswaSelected(siswa) {
+    $('#jenjang').val(siswa.jenjang);
+    $('#tingkat_kelas').val(siswa.tingkat_kelas);
+  }
+
+  function printReceipt(nis){
+    window.open('{{url("iuran/print-bukti")}}/'+nis, '_blank');
   }
 
   function getDropdown(){
@@ -319,26 +345,38 @@
             var data = jsonResponse.data
             for (let index = 0; index < data.type.length; index++) {
               $('#searchType').append($('<option>', { 
-                    value: data.type[index].value,
-                    text : data.type[index].label 
+                  value: data.type[index].value,
+                  text : data.type[index].label 
               }));
               $('#type').append($('<option>', { 
-                    value: data.type[index].value,
-                    text : data.type[index].label 
+                  value: data.type[index].value,
+                  text : data.type[index].label 
               }));
-              if(['0','1','3','4'].includes(data.type[index].value)){
-                $('#reference').append($('<option>', { 
-                    value: data.type[index].value,
-                    text : data.type[index].label
-                }));
-              }
-            }                   
+            }
+            for (let index = 0; index < data.jenjang.length; index++) {
+              $('#searchJenjang').append($('<option>', { 
+                value: data.jenjang[index].value,
+                text : data.jenjang[index].label 
+              }));               
+            } 
+            for (let index = 0; index < data.th_ajaran.length; index++) {
+              $('#searchTahunAjaran').append($('<option>', { 
+                value: data.th_ajaran[index].value,
+                text : data.th_ajaran[index].label 
+              }));
+              $('#th_ajaran').append($('<option>', { 
+                value: data.th_ajaran[index].value,
+                text : data.th_ajaran[index].label 
+              }));
+            }                    
             $('#searchType').select2();
+            $('#searchJenjang').select2();
+            $('#searchTahunAjaran').select2();
             $('#type').select2({
-                dropdownParent: $("#iuranModal")
+                dropdownParent: $(".type-wrapper")
             });
-            $('#reference').select2({
-                dropdownParent: $("#iuranModal")
+            $('#th_ajaran').select2({
+              dropdownParent: $(".th-ajaran-wrapper")
             });
             resolve()
           }else{
@@ -355,255 +393,36 @@
     })      
   }
 
-  function getAnggotaDropdown(){
-    return new Promise((resolve,reject) => {
-      $.ajax({
-        url : '{{url("master/anggota/dropdown")}}',
+  function search(){
+    table.ajax.reload()
+  }
+
+  function reset(){
+    $('.searchForm').trigger("reset")
+    $('select[name=searchDate]').val("").trigger('change')
+    $('select[name=searchJenjang]').val("").trigger('change')
+    $('select[name=searchType]').val("").trigger('change')
+    $('select[name=searchTingkat]').val("").trigger('change')
+    $('select[name=searchTahunAjaran]').val("").trigger('change')
+    table.ajax.reload()
+  }
+
+  function view(id){
+    $.ajax({
+        url : '{{url("iuran/detail")}}/'+id,
         type: 'GET',
         data: '',
         success: function(data) {
           var jsonResponse = JSON.parse(data);
           if(jsonResponse.status){
             var data = jsonResponse.data
-            $('#no_anggota').find('option').remove()
-           
-            $('#no_anggota').append('<option value="" disabled selected>Select your option</option>')
-            for (let index = 0; index < data.length; index++) {
-              $('#no_anggota').append($('<option>', { 
-                    value: data[index].no_anggota,
-                    text : `${data[index].no_anggota} ${data[index].fullname}` 
-              }));
-            }
-                   
-            $('#no_anggota').select2({
-                dropdownParent: $("#iuranModal")
+            $(".view-iuran-detail > tbody").empty();
+            $.each(data, function (key, val) {
+              let no = parseInt(key) + 1;
+              let tds = ' <td>' + no + '</td><td>' + month[parseInt(val.month)-1] + '</td><td>' + val.year + '</td><td>' + formatCurrency(val.amount) + '</td>';
+              $('.view-iuran-detail > tbody:last').append('<tr>' + tds + '</tr>');
             });
- 
-            resolve()
-          }else{
-            reject()
-            showNotification(jsonResponse.message, 'danger');
-          }
-        },
-        error: function(xhr) { // if error occured
-          var msg = xhr.responseJSON.message
-          showNotification(msg,'danger')
-          reject()
-        },
-      })
-    })
-  }
-
-  function getIuranList(type = ''){
-    return new Promise((resolve,reject) => {
-      $.ajax({
-        url : '{{url("iuran/dropdown-list")}}',
-        type: 'GET',
-        data: {type},
-        success: function(data) {
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status){
-            var data = jsonResponse.data
-            for (let index = 0; index < data.length; index++) {
-              $('#reference').append($('<option>', { 
-                    value: data[index].id,
-                    text : `${data[index].no_anggota} - ${data[index].fullname} ( Iuran ${data[index].type_iuran}, ${(data[index].month)?data[index].month + ' / ':''} ${data[index].year} )`
-              }));
-            }
-                   
-            $('#reference').select2({
-                dropdownParent: $("#iuranModal")
-            });
- 
-            resolve()
-          }else{
-            reject()
-            showNotification(jsonResponse.message, 'danger');
-          }
-        },
-        error: function(xhr) { // if error occured
-          var msg = xhr.responseJSON.message
-          showNotification(msg,'danger')
-          reject()
-        },
-      })
-    })
-  }
-
-  function search(){
-    table.ajax.reload()
-  }
-
-  function reset(){
-    $('select[name=searchMonth]').val("").trigger('change')
-    $('select[name=searchYear]').val("").trigger('change')
-    $('select[name=searchType]').val("").trigger('change')
-    table.ajax.reload()
-  }
-
-  function update() {
-    let arr = []
-    let rowcollection =  table.$("input[type=checkbox]", {"page": "all"});
-    rowcollection.each(function(index,elem){      
-      if($(elem).prop("checked")){
-        let checkbox_value = $(elem).val();
-        arr.push(checkbox_value)
-      }        
-    });
-    if(arr.length == 0){
-      showNotification('Silahkan pilih salah satu', 'danger');
-    }else{
-      $('#updateModal').modal({
-        focus: true,    
-      })
-    }
-  }
-
-  function monthlyPay() {
-    doUpdate(1)
-  }
-
-  function updateStatus(status) {
-    let arr = []
-    let rowcollection =  table.$("input[type=checkbox]", {"page": "all"});
-    rowcollection.each(function(index,elem){      
-      if($(elem).prop("checked")){
-        let checkbox_value = $(elem).val();
-        arr.push(checkbox_value)
-      }        
-    });
-    if(arr.length == 0){
-      showNotification('Silahkan pilih salah satu', 'danger');
-    }else{
-      doUpdate(status,arr)
-    }
-  }
-
-  function doUpdate(status,data='') {
-    $.confirm({
-      title: 'Confirmation!',
-      content: 'Anda yakin??',
-      buttons: {
-          confirm: function () {
-            $.ajaxSetup({
-              headers: {
-                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-              }
-            }); 
-            $.ajax({
-              url : '{{url("iuran/update-status")}}',
-              type: 'POST',
-              data : {data: data, status: status},
-              beforeSend: function() {
-                showNotification('Loading..','warning',1000)
-              },
-              success: function(data) {
-                var jsonResponse = JSON.parse(data);
-                if(jsonResponse.status === 200){
-                  $.notifyClose();
-                  showNotification(jsonResponse.message,'success');
-                  table.rows().invalidate('data').draw(false);
-                  $('#updateModal').modal('hide')
-                }else{
-                  showNotification(jsonResponse.message, 'danger');
-                }
-              },
-              error: function(xhr) { // if error occured
-                var msg = xhr.responseJSON.message
-                showNotification(msg,'danger')
-              },
-            })
-          },
-          cancel: function () {
-            return;
-          },
-      }
-    });
-  }
-
-  function addThr() {
-    $('#thrModal').modal({
-        focus: true,    
-    })
-  }
-
-  function checkThr() {
-    $.ajax({
-      url : '{{url("iuran/get-thr")}}',
-      type: 'GET',
-      success: function(data) {
-        var jsonResponse = JSON.parse(data);
-        if(jsonResponse.status){
-          if(jsonResponse.data.thr){
-            $('#thr').val(formatting(jsonResponse.data.thr))
-            if(jsonResponse.data.is_thr_monthly == "Y"){
-              $('#is_thr_monthly2').prop('checked',true);
-            }
-            $("div.info-thr").html(`Potongan berikutnya untuk tabungan hari raya: Rp ${formatCurrency(jsonResponse.data.thr)}`);
-          }
-        }else{
-          showNotification(jsonResponse.message, 'danger');
-        }
-      },
-      error: function(xhr) { // if error occured
-        var msg = xhr.responseJSON.message
-        showNotification(msg,'danger')
-      },
-    })
-  }
-
-  function setThr() {
-    if(!$('input[name=thr]').val()){
-      showNotification("Silahkan isi nominal", 'danger');
-      return false;
-    }
-
-    let data = {
-      thr: $('input[name=thr]').val(),
-      is_thr_monthly: $('input[name=is_thr_monthly]:checked').val()
-    }
-
-    $.ajaxSetup({
-      headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      }
-    }); 
-    $.ajax({
-      url : '{{url("iuran/set-thr")}}',
-      type: 'POST',
-      data : {data: data},
-      beforeSend: function() {
-        showNotification('Loading..','warning',1000)
-      },
-      success: function(data) {
-        var jsonResponse = JSON.parse(data);
-        if(jsonResponse.status){
-          $.notifyClose();
-          showNotification(jsonResponse.message,'success');
-          $('#thrModal').modal('hide');
-          $("div.info-thr").html(`Potongan berikutnya untuk tabungan hari raya: Rp ${$('input[name=thr]').val()}`);
-        }else{
-          showNotification(jsonResponse.message, 'danger');
-        }
-      },
-      error: function(xhr) { // if error occured
-        var msg = xhr.responseJSON.message
-        showNotification(msg,'danger')
-      },
-    })
-  }
-
-  function getAmount(data) {
-    $.ajax({
-        url : '{{url("iuran/amount-iuran")}}',
-        type: 'GET',
-        data: {type: data, no_anggota: $('#no_anggota').val()},
-        success: function(data) {
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status){
-            var data = jsonResponse.data
-            $('#amount').val(formatting(data))
-
+            $('#viewModal').modal('show');
           }else{
             showNotification(jsonResponse.message, 'danger');
           }
@@ -612,7 +431,7 @@
           var msg = xhr.responseJSON.message
           showNotification(msg,'danger')
         },
-      })
+    })
   }
   
 </script>

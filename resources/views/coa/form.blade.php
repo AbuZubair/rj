@@ -1,4 +1,4 @@
-<form method="post" action="{{ route('coa.crud',isset($data)?1:0 ) }}" data-redirect="{{ route('coa') }}" autocomplete="off" class="form-horizontal form-admin">
+<form method="post" action="{{ route('coa.crud') }}" data-redirect="{{ route('coa') }}" autocomplete="off" class="form-horizontal form-admin">
   @csrf
   <input type="hidden" name="id" id="id" value="{{isset($data)?$data['id']:''}}">
   <div class="card" style="margin-top: 0 !important;">
@@ -9,7 +9,7 @@
           <label class="col-sm-6 col-form-label">{{ __('Kode*') }}</label>
           <div class="col-sm-12">
             <div class="form-group{{ $errors->has('coa_code') ? ' has-danger' : '' }}">
-              <input class="form-control{{ $errors->has('coa_code') ? ' is-invalid' : '' }}" name="coa_code" id="coa_code" type="text" placeholder="{{ __('Nama Lengkap') }}" value="{{ old('coa_code', isset($data) ? $data['coa_code'] : '') }}" required="true" aria-required="true" @if(isset($data)) disabled @endif/>
+              <input class="form-control{{ $errors->has('coa_code') ? ' is-invalid' : '' }}" name="coa_code" id="coa_code" type="text" placeholder="{{ __('Kode') }}" value="{{ old('coa_code', isset($data) ? $data['coa_code'] : '') }}" required="true" aria-required="true" @if(isset($data)) disabled @endif/>
             </div>
           </div>
         </div>
@@ -18,7 +18,7 @@
           <label class="col-sm-6 col-form-label">{{ __('COA*') }}</label>
           <div class="col-sm-12">
             <div class="form-group{{ $errors->has('coa_name') ? ' has-danger' : '' }}">
-              <input class="form-control{{ $errors->has('coa_name') ? ' is-invalid' : '' }}" name="coa_name" id="coa_name" type="text" placeholder="{{ __('Nama Lengkap') }}" value="{{ old('coa_name', isset($data) ? $data['coa_name'] : '') }}" required="true" aria-required="true"/>
+              <input class="form-control{{ $errors->has('coa_name') ? ' is-invalid' : '' }}" name="coa_name" id="coa_name" type="text" placeholder="{{ __('Nama COA') }}" value="{{ old('coa_name', isset($data) ? $data['coa_name'] : '') }}" required="true" aria-required="true"/>
             </div>
           </div>
         </div>        

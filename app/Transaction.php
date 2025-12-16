@@ -28,7 +28,6 @@ class Transaction extends Model
         'trans_year',
         'trans_month',
         'trans_date',
-        'no_murabahah',
         'no_anggota',
         'amount',
         'trans_type',
@@ -53,10 +52,8 @@ class Transaction extends Model
     public function getQuery()
     {
         return DB::table('transaction')
-            ->leftJoin('murabahah', 'transaction.no_murabahah', '=', 'murabahah.no_murabahah')
-            ->leftJoin('anggota', 'murabahah.no_anggota', '=', 'anggota.no_anggota') 
             ->leftJoin('coa', 'coa.coa_code', '=', 'transaction.coa_code')                     
-            ->select(DB::raw('transaction.*,CONCAT("TRN",LPAD(transaction.id, 8, "0")) as trans_no,anggota.fullname as anggota,coa.coa_name'));
+            ->select(DB::raw('transaction.*,CONCAT("TRN",LPAD(transaction.id, 8, "0")) as trans_no,coa.coa_name'));
     }
 
     public static function getData($request)
@@ -69,66 +66,25 @@ class Transaction extends Model
             ->where('transaction.trans_month',date_format(date_create($request->input('searchDate')),"m"))
             ->where('transaction.trans_date',date_format(date_create($request->input('searchDate')),"d"));
         }
-        if($request->input('dk')!='')$query = $query->where('transaction.dk',$request->input('dk'));
-        if(in_array(Auth::user()->getRole(), [4]))$query->where('transaction.trans_type','konsinasi');
-        // $query = $query->where('tans_desc',"!=","Auto Generate Potongan");
         $data = $query->orderByDesc('transaction.created_date')->get();
         return $data;
     }
 
-    public static function getPaginatedData($request)
-    {
-        $search = $request->input('search.value');
-        $columns = $request->get('columns');
-    
-        $pageSize = ($request->length) ? $request->length : 10;
-
-        /**
-         * Base query
-         */
-        $class = new Transaction();
-        $query = $class->getQuery();
-
-        $itemCounter = $query->get();
-        $count_total = $query->count();
-
-        // Filter by search and filter
-        $count_filter = 0;
-        $is_filtered = false;
-        if($request->input('coa_code')!=''){
-            $query = $query->where('transaction.coa_code',$request->input('coa_code'));
-            $is_filtered = true;
-        }
-        if($request->input('searchDate')!=''){
-            $query = $query->where('transaction.trans_year',date_format(date_create($request->input('searchDate')),"Y"))
-                        ->where('transaction.trans_month',date_format(date_create($request->input('searchDate')),"m"))
-                        ->where('transaction.trans_date',date_format(date_create($request->input('searchDate')),"d"));
-            $is_filtered = true;
-        }
-        if($request->input('dk')!=''){
-            $query = $query->where('transaction.dk',$request->input('dk'));
-            $is_filtered = true;
-        }        
-        if($search != ''){
-            $query = $query->where( 'transaction.id' , 'LIKE' , '%'.$search.'%')
-                        ->orWhere( 'transaction.tans_desc' , 'LIKE' , '%'.$search.'%')
-                        ->orWhere( 'coa.coa_name' , 'LIKE' , '%'.$search.'%');
-            $is_filtered = true;
-        }
-        if($is_filtered){
-            $count_filter = $query->count();
-        }
-        if(in_array(Auth::user()->getRole(), [4]))$query->where('transaction.trans_type','konsinasi');
-
-        // Paginate
-        $start = ($request->start) ? $request->start : 0;
-        $query->skip($start)->take($pageSize);
-
-        if($count_filter == 0){
-            $count_filter = $count_total;
-        }
-
-        $data = $query->orderByDesc('transaction.created_date')->get();
-        return array('data' => $data,'count_filter' => $count_filter,'count_total' => $count_total);
+    public static function getReportList($request){
+        $query = DB::table('transaction')   
+            ->select(DB::raw('transaction.*, CONCAT("TRN",LPAD(transaction.id, 8, "0")) as trans_no, CASE WHEN transaction.dk ="kredit" THEN transaction.amount ELSE NULL END AS kredit, CASE WHEN transaction.dk ="debit" THEN transaction.amount ELSE NULL END AS debit, coa_code, DATE_FORMAT(CONCAT(trans_year,"-",trans_month,"-",trans_date), "%d %M %Y") as groupDate'));
+            if($request->input('searchStartDate')!='' && $request->input('searchEndDate')!=''){
+                $query->whereBetween(DB::raw("STR_TO_DATE(CONCAT(trans_month,' ',trans_date,' ',trans_year), '%m %d %Y')"),[$request->input('searchStartDate'),$request->input('searchEndDate')]);
+            }
+            if($request->input('searchYear')!='')$query->where('trans_year',$request->input('searchYear'));
+            if($request->input('searchMonth')!='')$query->where('trans_month',$request->input('searchMonth'));
+            if($request->input('searchDate')!='')$query->whereRaw("STR_TO_DATE(CONCAT(trans_month,' ',trans_date,' ',trans_year), '%m %d %Y') ='". $request->input('searchDate')."' ");
+            if($request->input('searchCoa')!='')$query->where('transaction.coa_code',$request->input('searchCoa'));
+                              
+        return $query
+            ->orderBy('trans_year', 'desc')
+            ->orderBy('trans_month', 'desc')
+            ->orderBy('trans_date', 'desc')
+            ->get()->toArray();
     }
 }

@@ -1,4 +1,4 @@
-<form method="post" action="{{ route('user.crud',isset($data)?1:0 ) }}" data-redirect="{{ route('user') }}" autocomplete="off" class="form-horizontal form-admin">
+<form method="post" action="{{ route('user.crud') }}" data-redirect="{{ route('user') }}" autocomplete="off" class="form-horizontal form-admin">
   @csrf
   <input type="hidden" name="id" id="id" value="{{isset($data)?$data['id']:''}}">
   <div class="card" style="margin-top: 0 !important;">
@@ -32,10 +32,9 @@
               <select class="form-control {{ $errors->has('role') ? ' is-invalid' : '' }}" name="role" id="role" placeholder="{{ __('Role') }}" value="{{ old('role', isset($data) ? $data['role'] : '') }}" required>
                 <option value="" disabled selected>Select your option</option>
                 <option value="0">Admin</option>
-                <option value="1">Anggota</option>
+                <option value="1">Staff</option>
                 <option value="2">Finance</option>
                 <option value="3">Inventory</option>
-                <option value="4">Sales</option>
               </select>
             </div>
           </div>
@@ -59,17 +58,17 @@
         </div>       
       </div>
 
-      <div class="form-group anggota-list" style="display: none;">
-        <label class="col-sm-6 col-form-label">{{ __('No Anggota*') }}</label>
+      <div class="form-group staff-list" style="display: none;">
+        <label class="col-sm-6 col-form-label">{{ __('NIP*') }}</label>
         <div class="col-sm-12">
           <div class="row align-items-center">
             <div class="col-sm-9">
-              <select class="form-control" name="no_anggota" id="no_anggota">
+              <select class="form-control" name="nip" id="nip">
                 <option value="" disabled selected>Select your option</option>
               </select>
             </div>
             <div class="col-sm-3">
-              <a class="btn btn-primary" href="{{ url('master/anggota') }}">Add Anggota</a>
+              <a class="btn btn-primary" href="{{ url('master/staff') }}">Add Staff</a>
             </div>
           </div>
         </div>

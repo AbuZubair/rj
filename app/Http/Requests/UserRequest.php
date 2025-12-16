@@ -30,8 +30,6 @@ class UserRequest extends FormRequest
         $rules = [
             'first_name' => ['required','min:3', new Sara],
             'last_name' => [new Sara],
-            // 'phone_number' => 'required|numeric|digits_between:1,16',
-            // 'email' => 'email:rfc,dns',
             'role' => 'required',
         ];  
         
@@ -44,7 +42,7 @@ class UserRequest extends FormRequest
         }
 
         if(Request::input('role') == '1'){
-            $rules['no_anggota'] = 'required';
+            $rules['nip'] = 'required';
         }
 
         if(Request::input('email') != ''){

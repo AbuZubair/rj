@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Koperasi Karyawan Prasadha Makmur Sejahtera'),
+    'name' => env('APP_NAME', 'SEKOLAH ISLAM RIYADHUL JANNAH'),
 
     /*
     |--------------------------------------------------------------------------
@@ -241,11 +241,9 @@ return [
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
     ],
 
-    'coa_penjualan' => env('COA_PENJUALAN'),
-    'coa_hpp' => env('COA_HPP'),
-    'coa_simpanan_wajib' => env('COA_SIMPANAN_WAJIB'),
-    'coa_simpanan_pokok' => env('COA_SIMPANAN_POKOK'),
-    'coa_thr' => env('COA_THR'),
-    'address' => env('ADDR')
-
+    'coa_piutang_spp' => env('COA_PIUTANG_SPP'),
+    'coa_piutang_um' => env('COA_PIUTANG_UM'),
+    'coa_piutang_du' => env('COA_PIUTANG_DU'),
+    'address' => env('ADDR'),
+    'bendahara' => env('BENDAHARA', 'Admin')
 ];

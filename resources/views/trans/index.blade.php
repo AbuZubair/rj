@@ -55,7 +55,7 @@
                     </select>
                   </div>
                 </div>
-              </div>     
+              </div>               
             </div>     
           </form>
           <div class="card-footer" style="justify-content: end !important;">
@@ -107,65 +107,10 @@
    var isEdit = null;
    $(document).ready(function(){  
 
-    $('#trans_type').select2({
-      dropdownParent: $("#transModal")
-    })
-
-    $('#dk').select2({
-      dropdownParent: $("#transModal")
-    })
-
-    $('#trans_type').on('change', function() {        
-      var data = $('#trans_type').val();
-      if (data) {
-        $('.main-section').show();
-        if(data == 'murabahah'){
-          $('.single_coa').show()
-          $('.double_coa').hide()
-          $('.list-murabahah').show()
-          $('.list-anggota').hide()
-          $('select[name=dk]').val('kredit').attr({'readonly': 'readonly'}).trigger('change')
-          $('select[name=coa_code]').val('A.1.2').attr({'readonly': 'readonly'}).trigger('change')
-        }else if(data == 'konsinasi'){
-          $('.single_coa').show()
-          $('.double_coa').hide()
-          $('.list-murabahah').hide()
-          $('.list-anggota').hide()
-          $('select[name=dk]').val('kredit').attr({'readonly': 'readonly'}).trigger('change')
-          $('select[name=coa_code]').val('D.2.3').attr({'readonly': 'readonly'}).trigger('change')
-        }else{
-          if(!isEdit){
-            $('#coa_code_kredit').attr("required", true);
-            $('#coa_code_debit').attr("required", true);
-            $('#coa_code').attr("required", false);
-            $('#dk').attr("required", false);
-            $('.double_coa').show()
-            $('.single_coa').hide()
-          }else{
-            $('#coa_code_kredit').attr("required", false);
-            $('#coa_code_debit').attr("required", false);
-            $('#coa_code').attr("required", true);
-            $('#dk').attr("required", true);
-            $('.double_coa').hide()
-            $('.single_coa').show()
-          }
-          $('.list-anggota').show()
-          $('.list-murabahah').hide()
-        }
-      } else {
-        $('.main-section').hide();
-      }
-    });
-
-    $('#no_murabahah').on('change', function() {      
-      var data = $('#no_murabahah').val();
-      if(data){
-        let angsuran = murabahah.find(e => e.no_murabahah==data)
-        $('input[name=amount]').val(angsuran.angsuran.toString().replace(".00","").replaceAll('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, "."))
-      }
-    });
-
     $('#searchDk').select2()
+    $('#dk').select2({
+      dropdownParent: $(".dk-wrapper")
+    })
 
     var config = {
       processing: true,        
@@ -202,8 +147,8 @@
             }
           },   
           {data:null,render:function(data,type,full,meta){
-              let html = `<button class="btn btn-sm btn-info" onClick="editAct('${data.id}','view')">View</button>`;
-              html += `<button class="btn btn-sm btn-success" onClick="editAct('${data.id}')">Edit</button>`;
+              let html = `<button class="btn btn-sm btn-success" onClick="editAct('${data.id}')"><i class="material-icons">edit</i></button>`;
+              html += `<button class="btn btn-sm btn-info" onClick="editAct('${data.id}','view')"><i class="material-icons">visibility</i></button>`;
               return html; 
             }
           }            
@@ -235,14 +180,13 @@
     btn += '<button class="btn btn-danger" onClick="deleteRow()"><i class="material-icons">delete</i> Delete</button>'    
     $("div.toolbar").attr('class','mt-4 mb-4').html(btn);
         
-    getDropdown()
-    getAnggotaDropdown()
-    getMurabahahDropdown()
-    
+    getDropdown()    
   });
   
   function addAct() {
     isEdit = false;
+    $('.double_coa').show();
+    $('.single_coa').hide();
     add();
   }
 
@@ -250,8 +194,6 @@
     isEdit = true;
     $('.double_coa').hide();
     $('.single_coa').show();
-    $('#coa_code_kredit').attr("required", false);
-    $('#coa_code_debit').attr("required", false);
     edit(id, mode)
   }
 
@@ -260,7 +202,9 @@
       $.ajax({
         url : '{{url("coa/dropdown-list")}}',
         type: 'GET',
-        data: '',
+        data: {
+          minlevel: 3
+        },
         success: function(data) {
           var jsonResponse = JSON.parse(data);
           if(jsonResponse.status){
@@ -274,7 +218,7 @@
                 value: listCoa[index].coa_code,
                 text : listCoa[index].coa_name 
               }));
-               $('#coa_code_kredit').append($('<option>', { 
+              $('#coa_code_kredit').append($('<option>', { 
                 value: listCoa[index].coa_code,
                 text : listCoa[index].coa_name 
               }));
@@ -283,90 +227,17 @@
                 text : listCoa[index].coa_name 
               }));
             }
-            $('#searchCoa').select2()
+            $('#searchCoa').select2();
             $('#coa_code').select2({
-              dropdownParent: $("#transModal")
+              dropdownParent: $(".coa-wrapper")
             })
             $('#coa_code_kredit').select2({
-              dropdownParent: $("#transModal")
+              dropdownParent: $(".coa-kredit-wrapper")
             })
             $('#coa_code_debit').select2({
-              dropdownParent: $("#transModal")
+              dropdownParent: $(".coa-debit-wrapper")
             })
             resolve();
-          }else{
-            reject()
-            showNotification(jsonResponse.message, 'danger');
-          }
-        },
-        error: function(xhr) { // if error occured
-          var msg = xhr.responseJSON.message
-          showNotification(msg,'danger')
-          reject()
-        },
-      })
-    })   
-  }
-
-  function getAnggotaDropdown(){
-    return new Promise((resolve,reject) => {
-      $.ajax({
-        url : '{{url("master/anggota/dropdown")}}',
-        type: 'GET',
-        data: '',
-        success: function(data) {
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status){
-            var data = jsonResponse.data
-            for (let index = 0; index < data.length; index++) {
-              $('#no_anggota').append($('<option>', { 
-                value: data[index].no_anggota,
-                text : data[index].fullname 
-              }));
-            }
-                   
-            $('#no_anggota').select2({
-                dropdownParent: $("#transModal")
-            });
- 
-            resolve()
-          }else{
-            reject()
-            showNotification(jsonResponse.message, 'danger');
-          }
-        },
-        error: function(xhr) { // if error occured
-          var msg = xhr.responseJSON.message
-          showNotification(msg,'danger')
-          reject()
-        },
-      })
-    })   
-  }
-
-  function getMurabahahDropdown(){
-    return new Promise((resolve,reject) => {
-      $.ajax({
-        url : '{{url("akad-kredit/dropdown-list")}}',
-        type: 'GET',
-        data: {status: "ongoing"},
-        success: function(data) {
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status){
-            var data = jsonResponse.data
-            murabahah = data;
-            for (let index = 0; index < data.length; index++) {
-              $('#no_murabahah').append($('<option>', { 
-                value: data[index].no_murabahah,
-                text : `${data[index].no_murabahah} - ${data[index].fullname}` 
-              }));
-            }
-                   
-            $('#no_murabahah').select2({
-                dropdownParent: $("#transModal")
-            });
- 
-            resolve()
           }else{
             reject()
             showNotification(jsonResponse.message, 'danger');

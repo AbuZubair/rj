@@ -51,7 +51,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <div id="password-section">
+        <form id="password-section">
           <div class="row align-items-center">
             <label class="col-sm-4 col-form-label">{{ __('Current Password*') }}</label>
             <div class="col-sm-7">
@@ -78,7 +78,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
 
       <div class="modal-footer" style="justify-content: center !important;">

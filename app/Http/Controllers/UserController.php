@@ -11,7 +11,7 @@ use App\Library\Services\Shared;
 use App\Library\Model\Model;
 use Illuminate\Support\Facades\Hash;
 use App\User;
-use App\Anggota;
+use App\Staff;
 use App\Http\Requests\UserRequest;
 
 class UserController extends Controller
@@ -63,7 +63,7 @@ class UserController extends Controller
         echo json_encode(array('status' => 200, 'message' => 'Process Succesfully', 'data' => $data));
     }
 
-    public function crud(UserRequest $request, $req)
+    public function crud(UserRequest $request)
     {
 
         try{
@@ -80,14 +80,14 @@ class UserController extends Controller
                     $i++;
                     $check = $this.checkUsername($check).$i;            
                 }
-                $data->username = ($request->input('role') == '1')?$request->input('no_anggota'):$check;
+                $data->username = ($request->input('role') == '1')?$request->input('nip'):$check;
                 $data->created_by = Auth::user()->getUsername();
             }
             $data->first_name = $request->input('first_name');
             $data->last_name = $request->input('last_name');
             $data->phone_number = $request->input('phone_number');
             $data->role = $request->input('role');
-            $data->no_anggota = $request->input('no_anggota');
+            $data->nip = $request->input('nip');
             $data->email = $request->input('email');
             if(strlen($request->get('password')) > 0){
                 $data->password = Hash::make($request->get('password'));
@@ -99,7 +99,7 @@ class UserController extends Controller
                 Log::info($msg);
                 $this->sharedService->logs($msg);
                 if($data->role == 1){
-                    $anggota = Anggota::where('no_anggota', $data->no_anggota)->first();
+                    $anggota = Staff::where('nip', $data->nip)->first();
                     if($anggota != null){
                         $anggota->email = $data->email;
                         $anggota->save();

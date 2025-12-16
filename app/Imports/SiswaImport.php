@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Imports;
+
+use App\Siswa;
+use App\BiayaSiswa;
+use App\Library\Services\Shared;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsErrors;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnError;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Events\AfterImport;
+use Maatwebsite\Excel\Validators\Failure;
+use Throwable;
+
+class SiswaImport implements
+    ToModel,
+    WithHeadingRow,
+    SkipsOnError,
+    WithValidation,
+    SkipsOnFailure
+{
+    use Importable, SkipsErrors, SkipsFailures;
+
+    public function model(array $row)
+    {
+        $jenjang = strtolower(str_replace(' ', '_', $row['jenjang']));
+
+        if($jenjang != "" && DB::table('parameter')->where('param','jenjang')->where('value',$jenjang)->doesntExist()){
+            DB::table('parameter')->insert([
+                'param' => 'jenjang',
+                'value' => $jenjang,
+                'label' => $jenjang
+            ]);
+        }
+         if(BiayaSiswa::where('nis', $row['nis'])->where('jenjang', $jenjang)->count() == 0){
+            $included = ['uang_masuk','spp'];
+            $query = DB::table('parameter')
+                ->whereIn('parameter.param',$included)
+                ->where('parameter.param1', $jenjang);
+            if($row['tingkat_kelas'] == '6' || $row['tingkat_kelas'] == '9' || $row['tingkat_kelas'] == '12'){
+                $query->where('parameter.param2', $row['tingkat_kelas']);
+            }else{
+                $query->whereNull('parameter.param2');
+            }
+            $param = $query->orderByDesc('param')->get()->toArray();
+            if(count($param) > 0){
+                $data = new BiayaSiswa;
+                $data->nis = $row['nis'];
+                $data->jenjang = $jenjang;
+                $data->created_by = auth()->user()->getUsername();
+                // Get th_ajaran from parameter
+                $th_ajaran = Shared::getTahunAjaranStatic();
+                $data->th_ajaran = $th_ajaran;
+                foreach ($param as $key => $value) {
+                    $data->{$value->param} = (int)$value->value;
+                }
+                $data->save();
+            }
+        }
+        return new Siswa([
+            'nis' => $row['nis'],
+            'join_date' => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['join_date']),
+            'email' => $row['email'],
+            'status_pendaftaran' => $row['status_pendaftaran'],
+            'jenjang' => $jenjang,
+            'tingkat_kelas' => $row['tingkat_kelas'],
+            'fullname' => $row['fullname'],
+            'tempat_lahir' => $row['tempat_lahir'],
+            'tanggal_lahir' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir']),
+            'nik' => $row['nik'],
+            'jenis_kelamin' => $row['jenis_kelamin'],
+            'urutan_anak_ke' => $row['urutan_anak_ke'],
+            'nisn' => $row['nisn'],
+            'alamat_tinggal' => $row['alamat_tinggal'],
+            'kelurahan' => $row['kelurahan'],
+            'kecamatan' => $row['kecamatan'],
+            'provinsi' => $row['provinsi'],
+            'tinggal_bersama' => $row['tinggal_bersama'],
+            'nama_ayah' => $row['nama_ayah'],
+            'tempat_lahir_ayah' => $row['tempat_lahir_ayah'],
+            'tanggal_lahir_ayah' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir_ayah']),
+            'pekerjaan_ayah' => $row['pekerjaan_ayah'],
+            'nama_ibu' => $row['nama_ibu'],
+            'tempat_lahir_ibu' => $row['tempat_lahir_ibu'],
+            'tanggal_lahir_ibu' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir_ibu']),
+            'pekerjaan_ibu' => $row['pekerjaan_ibu'],
+            'penghasilan_orangtua' => $row['penghasilan_orangtua'],
+            'phone' => $row['phone'],
+            'asal_sekolah' => $row['asal_sekolah'],
+            'alamat_sekolah_asal' => $row['alamat_sekolah_asal'],
+            'tinggi_badan' => $row['tinggi_badan'],
+            'berat_badan' => $row['berat_badan'],
+            'riwayat_sakit' => $row['riwayat_sakit'],
+            'bidang_olahraga' => $row['bidang_olahraga'],
+            'bidang_lainnya' => $row['bidang_lainnya'],
+            'program_unggulan' => $row['program_unggulan'],
+            'spp_terakhir' => $row['spp_terakhir'],
+            'is_active' => $row['is_active']
+        ]);
+    }
+
+    public function rules(): array
+    {
+        return [
+            '*.nis' => ['required','unique:siswa,nis'],
+            '*.join_date' => ['required'],
+            '*.nisn' => ['nullable','unique:siswa,nisn']
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            '*.nis.required' => 'NIS is required.',
+            '*.nis.unique' => 'NIS must be unique.',
+            '*.nisn.unique' => 'NISN must be unique.'
+        ];
+    }
+
+    public static function afterImport(AfterImport $event)
+    {
+    }
+
+}

@@ -33,6 +33,8 @@ class Neraca extends Model
         'coa_code',
         'debit',
         'kredit',
+        'begining_balance',
+        'ending_balance',
         'created_date',
         'created_by',
         'updated_date',

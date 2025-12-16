@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>KOPERASI KARYAWAN PRASADHA MAKMUR SEJAHTERA</title>
+    <title>SEKOLAH ISLAM RIYADHUL JANNAH</title>
     <link rel="icon" type="image/x-icon" href="/images"/>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
     <!--     Fonts and icons     -->
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- CSS Files -->
-    <link href="{{ asset('material') }}/css/style.css" rel="stylesheet" />
+    <link href="{{ asset('css') }}/style.css" rel="stylesheet" />
     <link href="{{ asset('material') }}/css/pagination.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- <link href="{{ asset('material') }}/css/material-dashboard.css?v=2.1.1" rel="stylesheet" /> -->
@@ -77,8 +77,7 @@
         <!-- Material Dashboard DEMO methods, don't include it in your project! -->
         <script src="{{ asset('material') }}/demo/demo.js"></script>
         <script src="{{ asset('material') }}/js/settings.js"></script>
-        <!-- <script src="{{ asset('material') }}/js/custom/global.js"></script>
-        <script src="{{ asset('material') }}/js/custom/pagination.js"></script>-->
+        <!--<script src="{{ asset('material') }}/js/custom/pagination.js"></script>-->
         <script src="{{ asset('material') }}/js/custom/typeahead.jquery.min.js"></script> 
 
         @stack('js')

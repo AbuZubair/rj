@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 use App\Library\Services\Shared;
 use App\Library\Model\Model;
 use App\User;
-use App\Anggota;
 
 class LoginController extends Controller
 {
@@ -61,16 +60,13 @@ class LoginController extends Controller
         );
        
         $fieldType = filter_var($request->input('username'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $check_anggota = Anggota::where('no_anggota', $request->input('username'))->first();
-        if($check_anggota!=null){
-            if($check_anggota->is_active=='N'){
-                return redirect(route('login'))->withInput($request->except('password'))->withErrors([
-                    'invalid' => 'Anggota sudah tidak akftif'
-                ]);
-            }
-        }
         if (Auth::attempt(array($fieldType => $request->input('username'), 'password' => $request->input('password')))) {
             $msg = Auth::user()->getusername().' has been login';
+            if(Auth::user()->getActive()=='N'){
+                return redirect(route('login'))->withInput($request->except('password'))->withErrors([
+                    'invalid' => 'User sudah tidak akftif'
+                ]);
+            }
             Log::info($msg);            
             $this->sharedService->logs($msg);
             return redirect(route('dashboard'));

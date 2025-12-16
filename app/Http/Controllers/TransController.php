@@ -52,44 +52,30 @@ class TransController extends Controller
     {
         $id = $req->get('id');
         $data = Transaction::where('id', $id)
-            ->select(DB::raw('transaction.id,transaction.dk,transaction.coa_code,transaction.amount,transaction.no_anggota,
-                transaction.no_murabahah,transaction.tans_desc,transaction.trans_date,transaction.trans_month,transaction.trans_year,
-                CASE WHEN (transaction.trans_type = "sembako") THEN "other" ELSE transaction.trans_type END as trans_type'))
+            ->select(DB::raw('transaction.id,transaction.coa_code,transaction.amount,transaction.tans_desc,transaction.trans_date,transaction.trans_month,transaction.trans_year, transaction.dk'))
             ->get()->first();
         echo json_encode(array('status' => 200, 'message' => 'Process Succesfully', 'data' => $data));
     }
 
-    public function crud(TransRequest $request, $req)
+    public function crud(TransRequest $request)
     {        
         DB::beginTransaction();
         try{
+            $isEdit = ($request->input('id') != '')? true : false;
             $data = new Transaction;
             $amt = str_replace(".","",$request->input('amount'));
             $amount =  str_replace(",",".",$amt);
-            $dk = null;
-            $coa_code = null;
-            if($request->input('id') != ''){
+            $dk = $request->input('dk');
+            $coa_code = $request->input('coa_code');
+            if($isEdit){
                 $data = Transaction::find($request->input('id'));
-                if($data->trans_type == 'murabahah'){
-                    $murabahah = Murabahah::where('no_murabahah',$data->no_murabahah)->first();
-                    $pembayaran = ($murabahah->nilai_pembayaran - $data->amount) +  $amount;                    
-                }
                 $temp_amt = $data->amount;
                 $data->updated_by = Auth::user()->getUsername();
-                $dk = $request->input('dk');
-                $coa_code = $request->input('coa_code');
             }else{
-                $data->created_by = Auth::user()->getUsername();
-                if($request->input('trans_type') == 'murabahah'){
-                    $murabahah = Murabahah::where('no_murabahah',$request->input('no_murabahah'))->first();
-                    $pembayaran = $murabahah->nilai_pembayaran +  $amount;
-                    if($murabahah->deduction == $murabahah->margin){
-                        if($pembayaran < $murabahah->nilai_total){
-                            echo json_encode(array('status' => 301, 'message' => 'Total yang harus dibayarkan '.$murabahah->nilai_total - $murabahah->nilai_pembayaran.', karena sudah masuk bulan terakhir'));
-                            die();
-                        }
-                    }
-                } else if($request->input('trans_type') == 'other'){
+                $coa_code = $request->input('coa_code_debit');
+                if(isset($coa_code) && $coa_code != ''){
+                    $dk = 'debit';
+                }else{
                     $dk = 'kredit';
                     $coa_code = $request->input('coa_code_kredit');
                 }
@@ -97,8 +83,6 @@ class TransController extends Controller
             $data->trans_year = date_format(date_create($request->input('transDate')),"Y");
             $data->trans_month = date_format(date_create($request->input('transDate')),"m");
             $data->trans_date = date_format(date_create($request->input('transDate')),"d");
-            if($request->input('no_murabahah')!=null)$data->no_murabahah = $request->input('no_murabahah');
-            $data->no_anggota = $request->input('no_anggota');
             $data->amount = $amount;
             $data->dk = $dk;
             $data->coa_code = $coa_code;
@@ -110,40 +94,28 @@ class TransController extends Controller
                 Log::info($msg);
                 $this->sharedService->logs($msg);
 
-                /*Update murabahah */
-                if($request->input('id') == ''){
-                    if($request->input('trans_type') == 'murabahah' || $data->trans_type == 'murabahah'){
-                        $murabahah = Murabahah::where('no_murabahah',$request->input('no_murabahah'))->first();
-                        $murabahah->nilai_pembayaran = $pembayaran;
-                        $murabahah->status = ($pembayaran == $murabahah->nilai_total)?2:1;
-                        $murabahah->deduction = $murabahah->deduction + 1;
-                        $murabahah->save();
-                        $this->updateBankAkun($request->input('transDate'),$request->input('amount'),'A.1.1.1','debit', 'Bank - Piutang Kredit no: '.$murabahah->no_murabahah.' ');
-                    } else if($request->input('trans_type') == 'other' || $data->trans_type == 'other'){
-                        // Create debit input
-                        $this->updateBankAkun(
+                if(!$isEdit){
+                    $input_coa_code_debit = $request->input('coa_code_debit');
+                    $input_coa_code_kredit = $request->input('coa_code_kredit');
+                    if((isset($input_coa_code_debit) && $input_coa_code_debit != '') && (isset($input_coa_code_kredit) && $input_coa_code_kredit != '')){
+                        $dk_pair = null;
+                        $coa_code_pair = null;
+                        if($dk === 'debit'){
+                            $dk_pair = 'kredit';
+                            $coa_code_pair = $input_coa_code_kredit;
+                        }else{
+                            $dk_pair = 'debit';
+                            $coa_code_pair = $input_coa_code_debit;
+                        }
+                        // Create pair input
+                        $this->createPairTrans(
                             $request->input('transDate'),
                             $data->amount,
-                            $request->input('coa_code_debit'),
-                            'debit',
+                            $coa_code_pair,
+                            $dk_pair,
                             $data->tans_desc
                         );
                     }
-                }else{
-                    if($request->input('trans_type') == 'murabahah' || $data->trans_type == 'murabahah'){
-                        $murabahah = Murabahah::where('no_murabahah',$data->no_murabahah)->first();
-                        $murabahah->nilai_pembayaran = $pembayaran;
-                        $murabahah->status = ($pembayaran == $murabahah->nilai_total)?2:1;
-                        $murabahah->save();
-                        $date=date_create($data->trans_year."-". $data->trans_month."-".$data->trans_date);
-                        $dk = ($amount < $temp_amt)?'kredit':'debit';
-                        $amt = abs($temp_amt - $amount);
-                        $this->updateBankAkun(date_format($date,"Y-m-d"),$amt,'A.1.1.1',$dk, 'Bank - Edit Piutang Kredit no: '.$murabahah->no_murabahah.' ');
-                    }  
-                }
-                                
-                if($request->input('trans_type') == 'konsinasi' || $data->trans_type == 'konsinasi'){
-                    $this->updateBankAkun($request->input('transDate'),$request->input('amount'),'A.1.0','debit', 'Kas - '. $data->tans_desc, 'konsinasi');
                 }
                 /*************************** */
                 
@@ -187,13 +159,22 @@ class TransController extends Controller
         echo json_encode(array('status' => 200, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
     }
 
-    public function updateBankAkun($date,$amount,$coa,$dk, $desc, $type = null)
+    public function createPairTrans($date,$amount,$coa,$dk, $desc)
     {
         $year = date('Y', strtotime($date));
         $month = date('m', strtotime($date));
         $day = date('d', strtotime($date));
         $arr = [
-            ['trans_year' => $year, 'trans_month' => $month, 'trans_date' => $day, 'amount' => (int)str_replace(".","",$amount), 'trans_type' => $type!=null?$type:'other', 'dk' => $dk, 'coa_code' => $coa, 'tans_desc' => $desc, 'created_by' => Auth::user()->getUsername()]
+            [
+                'trans_year' => $year, 
+                'trans_month' => $month, 
+                'trans_date' => $day, 
+                'amount' => (int)str_replace(".","",$amount), 
+                'dk' => $dk, 
+                'coa_code' => $coa, 
+                'tans_desc' => $desc, 
+                'created_by' => Auth::user()->getUsername()
+            ]
         ];
         DB::table('transaction')->insert($arr);
     }

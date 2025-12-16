@@ -23,9 +23,10 @@ class Iuran extends Model
      */
     protected $fillable = [    
         'id',
-        'no_anggota',
-        'month',
-        'year',
+        'nis',
+        'jenjang',
+        'tingkat_kelas',
+        'th_ajaran',
         'type',
         'amount',
         'status',
@@ -35,6 +36,14 @@ class Iuran extends Model
         'updated_date',
         'updated_by'
     ];
+    
+    /**
+     * Set relationship with siswa
+     */
+    public function siswa()
+    {
+        return $this->belongsTo('App\Siswa', 'nis', 'nis');
+    }
 
     /**
      * The attributes that should be hidden for arrays.
@@ -52,64 +61,44 @@ class Iuran extends Model
                 DB::raw("(select * from `parameter` where `parameter`.`param` = 'type_iuran') `param`"), 
                 'param.value', '=', 'iuran.type'
             )
-            ->leftJoin('anggota', 'anggota.no_anggota', '=', 'iuran.no_anggota')
-            ->select(DB::raw('iuran.*, param.label as type_iuran, anggota.fullname, CASE WHEN iuran.status = 1 THEN "Sudah Dibayarkan" ELSE "Belum Dibayar" END AS status_iuran'));
+            ->leftJoin('siswa', 'siswa.nis', '=', 'iuran.nis')
+            ->select(DB::raw('iuran.*, param.label as type_iuran, siswa.fullname, CASE WHEN iuran.status = 1 THEN "Sudah Dibayarkan" ELSE "Belum Dibayar" END AS status_iuran'));
     }
 
     public static function getData($request)
     {
         $class = new Iuran();
         $query = $class->getQuery();
-        if($request->get('month')!='')$query->where('iuran.month',$request->get('month'));
-        if($request->get('year')!='')$query->where('iuran.year',$request->get('year'));
+        if($request->get('jenjang')!='')$query->where('iuran.jenjang',$request->get('jenjang'));
+        if($request->get('tingkat_kelas')!='')$query->where('iuran.tingkat_kelas',$request->get('tingkat_kelas'));
+        if($request->get('th_ajaran')!='')$query->where('iuran.th_ajaran',$request->get('th_ajaran'));
+        if($request->get('date')!='')$query->where("paid_date", $request->get('date'));
         if($request->get('type')!='')$query->where('iuran.type',$request->get('type'));
-        if(in_array(Auth::user()->getRole(), [1]))$query->where('iuran.no_anggota',Auth::user()->getNoAnggota());
-        $data = $query->orderByDesc('year')->orderByDesc('month')->get();
+        $data = $query->orderByDesc('paid_date')->get();
         return $data;
     }
 
-    public static function getList($request)
+    public static function getReportList($request)
     {
-        $class = new Iuran();
-        $query = $class->getQuery();
-        if($request->get('type'))$query->whereIn('type', explode(',',$request->get('type')));
-        $data = $query->orderByDesc('created_date')->get();
-        return $data;
-    }
+        // Get all active siswa and join with each biaya siswa table that has th_ajaran from request  
+        // Add new column in select called "status_spp", this column will be 1 if month and year "spp_terakhir" in Siswa is less than this month if today's date is more than 10, otherwise 0
+        $query = DB::table('siswa')
+            ->leftJoin(
+                DB::raw("(select nis, th_ajaran, status_um, status_du, um_masuk, du_masuk from `biaya_siswa` where `biaya_siswa`.`th_ajaran` = '".$request->input('tahun_ajaran')."') `bs`"),
+                'bs.nis', '=', 'siswa.nis'
+            )
+            ->leftJoin('parameter as a', 'a.value', '=', 'siswa.jenjang') 
+            ->select('siswa.fullname', 'siswa.jenjang', 'a.label as jenjang_text', 'siswa.tingkat_kelas', 'siswa.nis', 'siswa.spp_terakhir', 'bs.um_masuk', 'bs.du_masuk', 'bs.th_ajaran', 'bs.status_du', 'bs.status_um', DB::raw('CASE WHEN MONTH(siswa.spp_terakhir) >= MONTH(CURRENT_DATE) AND YEAR(siswa.spp_terakhir) = YEAR(CURRENT_DATE) THEN 1 ELSE 0 END AS status_spp'))
+            ->where('siswa.is_active', 'Y');
 
-    public static function getTotalIuran(){
-        $query = DB::table('iuran')
-                ->leftJoin(
-                    DB::raw("(select * from `parameter` where `parameter`.`param` = 'type_iuran') `param`"), 
-                    'param.value', '=', 'iuran.type'
-                )
-                ->leftJoin(
-                    DB::raw("(select * from `parameter` where `parameter`.`param` = 'type_iuran') `ref`"), 
-                    'ref.value', '=', 'iuran.reference'
-                )
-                ->leftJoin('anggota', 'anggota.no_anggota', '=', 'iuran.no_anggota')
-                ->leftJoin(
-                    DB::raw("(select MAX(year) as year, no_anggota, type from `iuran` GROUP BY no_anggota, type) `b`"), function($join)
-                    {
-                        $join->on('b.no_anggota', '=', 'iuran.no_anggota');
-                        $join->on('b.type', '=', 'iuran.type');
-                    }
-                )
-                ->leftJoin(
-                    DB::raw("(select MAX(year) as year, MAX(MONTH) AS max_month, no_anggota, type from `iuran` GROUP BY no_anggota, type, year) `c`"), function($join)
-                    {
-                        $join->on('c.no_anggota', '=', 'iuran.no_anggota');
-                        $join->on('c.type', '=', 'iuran.type');
-                        $join->on('c.year', '=', 'b.year');
-                    }
-                )
-                ->leftJoin(
-                    DB::raw("(select no_anggota, reference, SUM(amount) as return_total from `iuran` where type = 2 AND year <= iuran.year GROUP BY no_anggota, reference) `return_val`"), function($join)
-                    {
-                        $join->on('return_val.no_anggota', '=', 'iuran.no_anggota');
-                        $join->on('return_val.reference', '=', 'iuran.type');
-                    }
-                );
-        return $query;
+        if($request->input('jenjang') != '') {
+            $query->where('siswa.jenjang', $request->input('jenjang'));
+        }
+
+        if($request->input('tingkat_kelas') != '') {
+            $query->where('siswa.tingkat_kelas', $request->input('tingkat_kelas'));
+        }
+
+        return $query->get()->toArray();
     }
 }

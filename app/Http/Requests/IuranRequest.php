@@ -26,16 +26,15 @@ class IuranRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'no_anggota' => ['required'],   
+            'nis' => ['required'],   
             'type' => ['required'],
-            'month' => ['required'],
-            'year' => ['required'],
-            'amount' => ['required'],      
-            // 'status' => ['required'],
+            'jenjang' => ['required'],
+            'tingkat_kelas' => ['required'],
+            'amount' => ['required']
         ];
 
-        if (Request::input('type') == '2') {
-            $rules['reference'] = 'required';
+        if (Request::input('type')!='spp') {
+            $rules['th_ajaran'] = ['required'];
         }
  
         return $rules;

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>KOPERASI KARYAWAN PRASADHA MAKMUR SEJAHTERA</title>
+    <title>SEKOLAH ISLAM RIYADHUL JANNAH</title>
     <link rel="icon" type="image/x-icon" href="/images"/>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
     <!--     Fonts and icons     -->
-    <link href="{{ asset('material') }}/css/style.css" rel="stylesheet" />
+    <link href="{{ asset('css') }}/style.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet"> -->
@@ -124,7 +124,6 @@
         <!-- Material Dashboard DEMO methods, don't include it in your project! -->
         <script src="{{ asset('material') }}/demo/demo.js"></script>
         <script src="{{ asset('material') }}/js/settings.js"></script>
-        <script type="text/javascript" src="{{ asset('material') }}/js/custom/global.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
         <script src="{{ asset('material') }}/nouislider.js"></script>
         <script src="{{ asset('material') }}/wNumb.js"></script>
@@ -205,6 +204,8 @@
                 })
             }
         </script>
+
+        <script type="text/javascript" src="{{ asset('js') }}/global.js"></script>
         @stack('js')
     </body>
 </html>

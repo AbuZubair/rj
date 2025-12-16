@@ -27,16 +27,12 @@ class TransRequest extends FormRequest
     {
         $rules = [
             'transDate'  => 'required',  
-            'tans_desc' => 'required'  
+            'tans_desc' => 'required'
         ];
 
-        if (Request::input('trans_type')=='murabahah' && Request::input('id')=='') {
-            $rules['no_murabahah'] = 'required';
-        }
-
-        if (Request::input('trans_type')=='other' && Request::input('id')=='') {
-            $rules['coa_code_kredit'] = 'required';
-            $rules['coa_code_debit'] = 'required';
+        if (Request::input('id')=='') {
+            $rules['coa_code_kredit'] = 'required_without:coa_code_debit';
+            $rules['coa_code_debit'] = 'required_without:coa_code_kredit';
         }else{
             $rules['dk'] = 'required';
             $rules['coa_code'] = 'required';

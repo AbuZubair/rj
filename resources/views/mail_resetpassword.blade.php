@@ -4,5 +4,5 @@
 <p>Silahkan login kembali dan segera ganti password anda</p>
  <br>
 <p>Best Regards,</p>
-<p>KOPERASI KARYAWAN PRASADHA MAKMUR SEJAHTERA</p>
+<p>SEKOLAH ISLAM RIYADHUL JANNAH</p>
  

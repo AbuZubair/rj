@@ -31,8 +31,7 @@ class User extends Authenticatable
         'phone_number',
         'email',
         'role',
-        'username',
-        'no_anggota',    
+        'username',    
         'created_date',
         'updated_date'
     ];
@@ -60,12 +59,13 @@ class User extends Authenticatable
 
     public function getRole()
     {
-        return $this->role;
+        $role = ['admin','staff','finance','inventory'];
+        return $role[$this->role];
     }
 
-    public function getNoAnggota()
+    public function getActive()
     {
-        return $this->no_anggota;
+        return $this->is_active;
     }
 
     public function look_for_role($check) {

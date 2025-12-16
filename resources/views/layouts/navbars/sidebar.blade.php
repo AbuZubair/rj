@@ -1,4 +1,4 @@
-<div class="sidebar pb-4" data-color="" data-background-color="white" data-image="">
+<div class="sidebar pb-4" data-color="green" data-background-color="white" data-image="">
   <!--
       Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
@@ -6,8 +6,7 @@
   -->
   <div class="logo mx-4">
     <a href="" class="simple-text logo-normal">
-      <!-- <img src="{{url('/images/JIP.jpg')}}" alt="" width="20%"> -->
-      <b>KOPERASI KARYAWAN PRASADHA MAKMUR SEJAHTERA</b>
+      <img src="{{url('/images/RJ.jpeg')}}" alt="" width="50%">
     </a>
   </div>
   <div class="sidebar-wrapper" style="height: auto !important">
@@ -20,7 +19,7 @@
         </a>
       </li>
 
-      @if(in_array(Auth::user()->getRole(), [0]))
+      @if(in_array(Auth::user()->getRole(), ['admin']))
       <li class="nav-item{{ $activePage == 'user' ? ' active' : '' }}">
         <a class="nav-link m-0" href="{{ url('user') }}">
           <i class="material-icons">account_circle</i>
@@ -29,47 +28,26 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0]))
-      <li class="nav-item{{ $activePage == 'settings' ? ' active' : '' }}">
-        <a class="nav-link m-0" href="{{ url('settings') }}">
+      @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
+      <li class="nav-item {{ in_array($activePage, ['biaya', 'organisasi']) ? ' active' : '' }}">
+        <a class="nav-link m-0 parent-list d-flex align-items-center {{ in_array($activePage, ['biaya', 'organisasi']) ? ' opened' : '' }}" href="#">
           <i class="material-icons">settings</i>
-            <p>Settings</p>
+          <p>Settings</p>
         </a>
-      </li>
-      @endif
-
-      @if(in_array(Auth::user()->getRole(), [0,4]))
-      <li class="nav-item {{ $activePage == 'anggota' || $activePage == 'produk' ||  $activePage == 'pengurus' ? ' active' : '' }}">
-        <a class="nav-link m-0 parent-list d-flex align-items-center {{ $activePage == 'anggota' || $activePage == 'produk' ||  $activePage == 'pengurus' ? ' opened' : '' }}" href="#">
-          <i class="material-icons">format_list_bulleted</i>
-          <p>Master</p>
-        </a>
-        <ul class="nav flex-column mt-0 pl-4" data-dropdown="inventory" style="{{ $activePage == 'anggota' || $activePage == 'produk' ||  $activePage == 'pengurus' ? '' : 'display:none' }}">
-          @if(in_array(Auth::user()->getRole(), [0]))
-          <li class="nav-item{{ $activePage == 'anggota' ? ' list-active' : '' }}">
-            <a class="nav-link m-0" href="{{ url('master/anggota') }}">
-              <i class="material-icons">assignment_ind</i>
-              <p>Anggota</p>
-            </a>
-          </li>
-          <li class="nav-item{{ $activePage == 'organisasi' ? ' list-active' : '' }}">
-            <a class="nav-link m-0" href="{{ url('master/organisasi') }}">
-              <i class="material-icons">business</i>
-              <p>Organisasi</p>
+        <ul class="nav flex-column mt-0 pl-4" data-dropdown="settings" style="{{ in_array($activePage, ['biaya', 'organisasi']) ? '' : 'display:none' }}">
+          @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
+          <li class="nav-item{{ $activePage == 'biaya' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('settings/biaya') }}">
+              <i class="material-icons">money</i>
+              <p>Biaya</p>
             </a>
           </li>
           @endif
-          <li class="nav-item{{ $activePage == 'produk' ? ' list-active' : '' }}">
-            <a class="nav-link m-0" href="{{ url('master/produk') }}">
-              <i class="material-icons">category</i>
-              <p>Produk</p>
-            </a>
-          </li>
-          @if(in_array(Auth::user()->getRole(), [0]))
-          <li class="nav-item{{ $activePage == 'pengurus' ? ' list-active' : '' }}">
-            <a class="nav-link m-0" href="{{ url('master/pengurus') }}">
-              <i class="material-icons">group</i>
-              <p>Pengurus</p>
+          @if(in_array(Auth::user()->getRole(), ['admin']))
+          <li class="nav-item{{ $activePage == 'organisasi' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('settings/organisasi') }}">
+              <i class="material-icons">business</i>
+              <p>Organisasi</p>
             </a>
           </li>
           @endif
@@ -77,7 +55,32 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0,3,4]))
+      @if(in_array(Auth::user()->getRole(), ['admin']))
+      <li class="nav-item {{ in_array($activePage, ['staff', 'kesiswaan']) ? ' active' : '' }}">
+        <a class="nav-link m-0 parent-list d-flex align-items-center {{ in_array($activePage, ['staff', 'kesiswaan']) ? ' opened' : '' }}" href="#">
+          <i class="material-icons">format_list_bulleted</i>
+          <p>Master</p>
+        </a>
+        <ul class="nav flex-column mt-0 pl-4" data-dropdown="inventory" style="{{ in_array($activePage, ['staff', 'kesiswaan']) ? '' : 'display:none' }}">
+          @if(in_array(Auth::user()->getRole(), ['admin']))
+          <li class="nav-item{{ $activePage == 'staff' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('master/staff') }}">
+              <i class="material-icons">assignment_ind</i>
+              <p>Staff</p>
+            </a>
+          </li>
+          <li class="nav-item{{ $activePage == 'kesiswaan' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('master/kesiswaan') }}">
+              <i class="material-icons">face</i>
+              <p>Kesiswaan</p>
+            </a>
+          </li>
+          @endif
+        </ul>
+      </li>
+      @endif
+
+      <!-- @if(in_array(Auth::user()->getRole(), [0,3,4]))
       <li class="nav-item{{ in_array($activePage,['purchase_order','purchase_order_receive','purchase_return']) ? ' active' : '' }}">
         <a class="nav-link m-0 parent-list d-flex align-items-center {{ in_array($activePage,['purchase_order','purchase_order_receive','purchase_return']) ? ' opened' : '' }}" href="#">
           <i class="material-icons">receipt_long</i>
@@ -142,9 +145,9 @@
             <p>Sales</p>
         </a>
       </li>
-      @endif
+      @endif -->
 
-      @if(in_array(Auth::user()->getRole(), [0,1]))
+      @if(in_array(Auth::user()->getRole(), ['admin','staff']))
       <li class="nav-item{{ $activePage == 'iuran' ? ' active' : '' }}">
         <a class="nav-link m-0" href="{{ url('iuran') }}">
           <i class="material-icons">receipt</i>
@@ -153,7 +156,7 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0,2]))
+      @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
       <li class="nav-item{{ $activePage == 'coa' ? ' active' : '' }}">
         <a class="nav-link m-0" href="{{ url('coa') }}">
           <i class="material-icons">library_books</i>
@@ -162,25 +165,7 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0,2]))
-      <li class="nav-item{{ $activePage == 'murabahah' ? ' active' : '' }}">
-        <a class="nav-link m-0" href="{{ url('akad-kredit') }}">
-          <i class="material-icons">account_balance_wallet</i>
-            <p>Akad Kredit</p>
-        </a>
-      </li>
-      @endif
-
-      @if(in_array(Auth::user()->getRole(), [0,1]))
-      <li class="nav-item{{ $activePage == 'pengajuan' ? ' active' : '' }}">
-        <a class="nav-link m-0" href="{{ url('pengajuan') }}">
-          <i class="material-icons">account_balance_wallet</i>
-            <p>Pengajuan Kredit</p>
-        </a>
-      </li>
-      @endif
-
-      @if(in_array(Auth::user()->getRole(), [0,2,4]))
+      @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
       <li class="nav-item{{ $activePage == 'trans' ? ' active' : '' }}">
         <a class="nav-link m-0" href="{{ url('trans') }}">
           <i class="material-icons">receipt_long</i>
@@ -189,7 +174,7 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0,2]))
+      @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
       <li class="nav-item{{ $activePage == 'finance' ? ' active' : '' }}">
         <a class="nav-link m-0" href="{{ url('finance') }}">
           <i class="material-icons">price_check</i>
@@ -198,7 +183,7 @@
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0,2]))
+      <!-- @if(in_array(Auth::user()->getRole(), [0,2]))
       <li class="nav-item {{ $activePage == 'persentase' || $activePage == 'pembagian' || $activePage == 'shu_pengurus' ? ' active' : '' }}">
         <a class="nav-link m-0 parent-list d-flex align-items-center {{ $activePage == 'persentase' || $activePage == 'pembagian' || $activePage == 'shu_pengurus' ? ' opened' : '' }}" href="#">
           <i class="material-icons">monetization_on</i>
@@ -225,18 +210,40 @@
           </li>
         </ul>
       </li>
-      @endif
-
-      @if(in_array(Auth::user()->getRole(), [0,1,2,4]))
-      <li class="nav-item{{ $activePage == 'report' ? ' active' : '' }}">
-        <a class="nav-link m-0" href="{{ url('report') }}">
+      @endif -->
+      
+      @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
+      <li class="nav-item {{ in_array($activePage, ['report-iuran', 'report-trans', 'report-aruskas']) ? ' active' : '' }}">
+        <a class="nav-link m-0 parent-list d-flex align-items-center {{ in_array($activePage, ['report-iuran', 'report-trans', 'report-aruskas']) ? ' opened' : '' }}" href="#">
           <i class="material-icons">summarize</i>
-            <p>Report</p>
+          <p>Report</p>
         </a>
+        <ul class="nav flex-column mt-0 pl-4" data-dropdown="report" style="{{ in_array($activePage, ['report-iuran', 'report-trans', 'report-aruskas']) ? '' : 'display:none' }}">
+          @if(in_array(Auth::user()->getRole(), ['admin', 'finance']))
+          <li class="nav-item{{ $activePage == 'report-iuran' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('report/iuran') }}">
+              <i class="material-icons">summarize</i>
+              <p>Iuran</p>
+            </a>
+          </li>
+          <li class="nav-item{{ $activePage == 'report-trans' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('report/trans') }}">
+              <i class="material-icons">summarize</i>
+              <p>Transaction</p>
+            </a>
+          </li>
+          <li class="nav-item{{ $activePage == 'report-aruskas' ? ' list-active' : '' }}">
+            <a class="nav-link m-0" href="{{ url('report/aruskas') }}">
+              <i class="material-icons">summarize</i>
+              <p>Arus Kas</p>
+            </a>
+          </li>
+          @endif
+        </ul>
       </li>
       @endif
 
-      @if(in_array(Auth::user()->getRole(), [0]))
+      @if(in_array(Auth::user()->getRole(), ['admin']))
       <!-- <li class="nav-item{{ $activePage == 'log' ? ' active' : '' }}">
         <a class="nav-link" href="{{ url('log') }}">
           <i class="material-icons">view_list</i>

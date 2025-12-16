@@ -36,7 +36,7 @@ $(document).ready(function () {
                 }
             });
         } else {
-            clr = "orange";
+            clr = "green";
         }
 
         if ($sidebar.length != 0) {

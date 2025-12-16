@@ -10,9 +10,9 @@
 
 @section('content')
 <div class="row m-0" style="min-height: 100vh;">
-  <div class="col-md-5 d-none d-lg-flex p-0 align-items-center bg-primary">
+  <div class="col-md-5 d-none d-lg-flex p-0 align-items-center bg-success">
     <div class="landing-wording ml-5">
-      <h1>Koperasi Karyawan Prasadha Makmur Sejahtera</h1>
+      <h1>SEKOLAH ISLAM RIYADHUL JANNAH</h1>
     </div>
   </div>
   <div class="col-md-7 col-sm-12 p-0 d-flex align-items-center">
@@ -64,7 +64,7 @@
               </div>
             </div>
             <div class="card-footer justify-content-center">
-              <button type="submit" class="btn btn-sm btn-block button-link">Masuk</button>
+              <button type="submit" class="btn btn-sm btn-block btn-success">Masuk</button>
             </div>
           </div>
       </form>
@@ -85,7 +85,7 @@
             </div>
           </div>
           <div class="card-footer justify-content-center">
-            <button type="submit" class="btn btn-sm btn-block button-link">Submit</button>
+            <button type="submit" class="btn btn-sm btn-block btn-success">Submit</button>
           </div>
         </div>
       </form>

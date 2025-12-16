@@ -45,7 +45,7 @@ class CoaController extends Controller
     {
         if ($request->ajax()) {
             $order = Coa::generateOrder();
-            $data = Coa::where('is_sum','N')->orderByRaw($order)->get();
+            $data = Coa::orderByRaw($order)->get();
             return Datatables::of($data)               
                 ->make(true);
         }
@@ -64,7 +64,7 @@ class CoaController extends Controller
         echo json_encode(array('status' => 200, 'message' => 'Process Succesfully', 'data' => $data));
     }
 
-    public function crud(CoaRequest $request, $req)
+    public function crud(CoaRequest $request)
     {
 
         try{
@@ -78,8 +78,7 @@ class CoaController extends Controller
             $data->coa_code = $request->input('coa_code');
             $data->coa_name = $request->input('coa_name');
             $data->coa_level = $request->input('coa_level');
-            $data->coa_parent = $request->input('coa_parent');
-            if($request->input('coa_parent') == 'C.7')$data->rumus_ending_balance = 2;      
+            $data->coa_parent = $request->input('coa_parent');      
             if($data->save()){  
                 $type = ($request->input('id') == '')?' save':' update';
                 $msg = Auth::user()->getUsername(). $type.' coa succesfully : '.json_encode($data);              
@@ -124,9 +123,25 @@ class CoaController extends Controller
         echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $array));
     }
 
-    public function getDropdownList()
+    public function getDropdownList(Request $request)
     {
         $order = Coa::generateOrder();
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => Coa::where('is_sum','N')->orderByRaw($order)->get()->toArray()));
+        $query = Coa::orderByRaw($order);
+        if($request->get('minlevel')){
+            $query->where('coa_level', '>=', $request->get('minlevel'));
+        }
+        $excludeCoas = [
+            config('app.coa_piutang_spp'),
+            config('app.coa_piutang_du'),
+            config('app.coa_piutang_um')
+        ];
+        for ($i = 1; $i <= 12; $i++) {
+            $excludeCoas[] = 'A.1.' . $i;
+        }
+        $excludeCoas = array_filter($excludeCoas); // Remove nulls if any config is missing
+        if (!empty($excludeCoas)) {
+            $query->whereNotIn('coa_code', $excludeCoas);
+        }
+        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $query->get()->toArray()));
     }
 }

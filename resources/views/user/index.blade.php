@@ -44,7 +44,7 @@
 <script type="text/javascript">
    $(document).ready(function(){
 
-    getDropdown()
+    //getDropdown()
 
     $('#role').select2({
         dropdownParent: $("#userModal")
@@ -53,10 +53,10 @@
     $('#role').on('change', function() {        
       var data = $('#role').val();
       if (data === '1') {
-        $('.anggota-list').show();
+        $('.staff-list').show();
       } else {
-        $('.anggota-list').hide();
-        $('#no_anggota').val('').trigger('change');
+        $('.staff-list').hide();
+        $('#no_staff').val('').trigger('change');
       }
     });
        
@@ -87,7 +87,7 @@
             },
             {data: 'email', name: 'email'},
             {data:null,render:function(data,type,full,meta){
-                return '<button class="btn btn-sm btn-success" onClick="edit('+data.id+')">Edit</button>';                    
+                return '<button class="btn btn-sm btn-success" onClick="edit('+data.id+')"><i class="material-icons">edit</i></button>';                    
               }
             },
         ],

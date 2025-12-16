@@ -27,6 +27,7 @@ class Coa extends Model
         'coa_parent' ,
         'begining_balance',
         'ending_balance',
+        'year',
         'rumus_ending_balance',
         'created_date',
         'created_by' ,

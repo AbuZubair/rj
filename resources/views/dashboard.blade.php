@@ -4,8 +4,9 @@
 
   <div class="content">
     <div class="container-fluid">
+      <button class="btn btn-primary" onClick="naikKelas()" >Ajaran Baru</button>
       @if(!in_array(Auth::user()->getRole(), [3,4]))
-        <div class="row">
+        <!-- <div class="row">
           <div class="col-lg-4 col-md-6 col-sm-6">
             <div class="card card-stats">
               <div class="card-header card-header-warning card-header-icon">
@@ -101,10 +102,10 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       @endif   
 
-      <div class="row">
+      <!-- <div class="row">
         <div class="{{ !in_array(Auth::user()->getRole(), [3,4])?'col-md-6':'col-md-12' }}">
           <div class="card card-chart">
             <div class="card-header card-header-success">
@@ -139,10 +140,10 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       @if(!in_array(Auth::user()->getRole(), [3,4]))
-      <div class="row">
+      <!-- <div class="row">
         <div class="col-md-12">
           <div class="card card-chart">
             <div class="card-header card-header-danger">
@@ -159,7 +160,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       @endif 
 
     </div>
@@ -178,53 +179,53 @@
       $('#cur-year').text((new Date()).getFullYear())
 
       if(!['3','4'].includes(role)){
-        getCardData(1).then((data) => {
-          let pokok = (data)?formatCurrency(data.total):0
-          $('.iuran-pokok').text('Rp '+ pokok )
-          $('.iuran-pokok').prev().hide()
-        });
-        getCardData(0).then((data) => {
-          let wajib = (data)?formatCurrency(data.total):0
-          $('.iuran-wajib').text('Rp '+ wajib )
-          $('.last-iuranwajib').text((data && data!=0)?'Per '+formattingDate(data.month, data.year):'-')
-          $('.iuran-wajib').prev().hide()
-        });
-        getCardData(4).then((data) => {
-          let thr = (data)?formatCurrency(data.total):0
-          $('.thr').text('Rp '+ thr )
-          $('.last-thr').text((data && data!=0)?'Per '+formattingDate(data.month, data.year):'-')
-          $('.thr').prev().hide()
-        });
+        // getCardData(1).then((data) => {
+        //   let pokok = (data)?formatCurrency(data.total):0
+        //   $('.iuran-pokok').text('Rp '+ pokok )
+        //   $('.iuran-pokok').prev().hide()
+        // });
+        // getCardData(0).then((data) => {
+        //   let wajib = (data)?formatCurrency(data.total):0
+        //   $('.iuran-wajib').text('Rp '+ wajib )
+        //   $('.last-iuranwajib').text((data && data!=0)?'Per '+formattingDate(data.month, data.year):'-')
+        //   $('.iuran-wajib').prev().hide()
+        // });
+        // getCardData(4).then((data) => {
+        //   let thr = (data)?formatCurrency(data.total):0
+        //   $('.thr').text('Rp '+ thr )
+        //   $('.last-thr').text((data && data!=0)?'Per '+formattingDate(data.month, data.year):'-')
+        //   $('.thr').prev().hide()
+        // });
 
-        $(".separate-col").css({
-            "visibility": "hidden"
-        });
-        getCreditSummary().then((data) => {
+        // $(".separate-col").css({
+        //     "visibility": "hidden"
+        // });
+        // getCreditSummary().then((data) => {
           
-          const total_brg = data.find(v => v.type === 0);
-          let kredit_brg = (total_brg != null)?formatCurrency(total_brg.total):0
-          let sisa_kredit_barang = (total_brg != null)?formatCurrency(total_brg.total_sisa):0
+        //   const total_brg = data.find(v => v.type === 0);
+        //   let kredit_brg = (total_brg != null)?formatCurrency(total_brg.total):0
+        //   let sisa_kredit_barang = (total_brg != null)?formatCurrency(total_brg.total_sisa):0
 
-          $('.kredit-barang').text('Total: Rp '+ kredit_brg )
-          $('.last-kb').text((kredit_brg && kredit_brg!=0)?'Per '+ new Date().getFullYear():'-')
-          $('.kredit-barang').prev().hide()
+        //   $('.kredit-barang').text('Total: Rp '+ kredit_brg )
+        //   $('.last-kb').text((kredit_brg && kredit_brg!=0)?'Per '+ new Date().getFullYear():'-')
+        //   $('.kredit-barang').prev().hide()
 
-          $('.sisa-kredit-barang').text('O/S: Rp '+ sisa_kredit_barang )
+        //   $('.sisa-kredit-barang').text('O/S: Rp '+ sisa_kredit_barang )
 
-          const total_jasa = data.find(v => v.type === 1);
-          let kredit_jasa = (total_jasa != null)?formatCurrency(total_jasa.total):0
-          let sisa_kredit_jasa = (total_jasa != null)?formatCurrency(total_jasa.total_sisa):0
+        //   const total_jasa = data.find(v => v.type === 1);
+        //   let kredit_jasa = (total_jasa != null)?formatCurrency(total_jasa.total):0
+        //   let sisa_kredit_jasa = (total_jasa != null)?formatCurrency(total_jasa.total_sisa):0
 
-          $('.kredit-jasa').text('Total: Rp '+ kredit_jasa )
-          $('.last-kj').text((kredit_jasa && kredit_jasa!=0)?'Per '+ new Date().getFullYear():'-')
-          $('.kredit-jasa').prev().hide()
+        //   $('.kredit-jasa').text('Total: Rp '+ kredit_jasa )
+        //   $('.last-kj').text((kredit_jasa && kredit_jasa!=0)?'Per '+ new Date().getFullYear():'-')
+        //   $('.kredit-jasa').prev().hide()
 
-          $('.sisa-kredit-jasa').text('O/S: Rp '+ sisa_kredit_jasa )
+        //   $('.sisa-kredit-jasa').text('O/S: Rp '+ sisa_kredit_jasa )
 
-          $(".separate-col").css({
-            "visibility": "visible"
-          });
-        })
+        //   $(".separate-col").css({
+        //     "visibility": "visible"
+        //   });
+        // })
       }
     });
 
@@ -275,6 +276,46 @@
           },
         })
       }) 
+    }
+
+    function naikKelas() {
+      $.confirm({
+        title: "Ajaran Baru",
+        content: `Anda yakin akan memulai ajaran baru?`,
+        buttons: {
+            confirm: function () {
+              $.ajaxSetup({
+                headers: {
+                  'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+              }); 
+              $.ajax({
+                url : "{{url('dashboard/ajaran-baru')}}",
+                type: 'POST',
+                beforeSend: function() {
+                  showNotification('Loading..','warning',null,true);
+                },
+                success: function(data) {
+                  $.notifyClose();
+                  var jsonResponse = JSON.parse(data);
+                  if(jsonResponse.status){
+                    showNotification(jsonResponse.message,'success');
+                  }else{
+                    showNotification(jsonResponse.message, 'danger');
+                  }
+                },
+                error: function(xhr) { // if error occured
+                  $.notifyClose();
+                  var msg = xhr.responseJSON.message
+                  showNotification(msg,'danger')
+                },
+              })
+            },
+            cancel: function () {
+              return;
+            },
+        }
+      }); 
     }
 
   </script>

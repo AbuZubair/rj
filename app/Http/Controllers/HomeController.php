@@ -7,14 +7,6 @@ use Illuminate\Support\Facades\DB;
 use App\Library\Services\Shared;
 use App\Library\Model\Model;
 use Yajra\Datatables\Datatables;
-use App\Iuran;
-use App\Anggota;
-use App\Sales;
-use App\Murabahah;
-use App\ItemTransaction;
-use App\Http\Requests\RegOnlineRequest;
-use App\Http\Requests\NewPasienRequest;
-use PDF;
 use stdClass;
 
 class HomeController extends Controller
@@ -44,67 +36,131 @@ class HomeController extends Controller
         return view('dashboard');
     }
     
-    public function getCardData(Request $request){
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $this->getIuran($request->input('data'))));
-    }
+    public function ajaranBaru()
+    {
+        try {
+            DB::beginTransaction();
 
-    public function getCreditSummary(Request $request){
-        $query = Murabahah::_getQuery();
-        $query->whereRaw('murabahah.status != "2"');
-        if(in_array(Auth::user()->getRole(), [1]))$query->where('anggota.no_anggota',Auth::user()->getNoAnggota());
-        $data = $query
-            ->groupBy('murabahah.type')
-            ->select(DB::raw('SUM(nilai_total) as total, SUM((murabahah.nilai_total - murabahah.nilai_pembayaran)) AS total_sisa,murabahah.type'))
-            ->get()->toArray();
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
-    }
+            // 1) Hitung dan update tahun ajaran baru
+            $currentTh = DB::table('parameter')->where('param', 'th_ajaran')->value('value');
+            $nextTh = $currentTh;
+            if ($currentTh && strpos($currentTh, '/') !== false) {
+                [$y1, $y2] = explode('/', $currentTh);
+                $nextTh = ((int)$y1 + 1) . '/' . ((int)$y2 + 1);
+            } elseif (is_numeric($currentTh)) {
+                $nextTh = (string)(((int)$currentTh) + 1);
+            }
+            DB::table('parameter')->where('param', 'th_ajaran')->update(['value' => $nextTh]);
 
-    public function getIuran($type){
-        $query = Iuran::getTotalIuran();
-        $query->where('iuran.type',$type)->where('iuran.year','<=',date('Y'))->where('status',1);
-        if(in_array(Auth::user()->getRole(), [1]))$query->where('iuran.no_anggota',Auth::user()->getNoAnggota());
-        $data = $query
-            ->groupBy('iuran.no_anggota','iuran.type','anggota.fullname','c.max_month', 'b.year', 'return_val.return_total')
-            ->orderBy('iuran.year', 'desc')
-            ->orderBy('month', 'desc')
-            ->select(DB::raw('SUM(amount)-COALESCE(return_val.return_total, 0) as total,c.max_month,b.year'))
-            ->get()->toArray();
-        $return = new stdClass();
-        $total = 0;
-        for ($i=0; $i < count($data); $i++) { 
-            $total += $data[$i]->total;
+            // Helper mapping untuk promosi yang mengubah jenjang
+            $specialPromotions = [
+                'paud|tk-b' => ['jenjang' => 'sd',  'tingkat_kelas' => '1'],
+                'sd|6'      => ['jenjang' => 'smp', 'tingkat_kelas' => '1'],
+                'smp|9'     => ['jenjang' => 'sma', 'tingkat_kelas' => '1'],
+            ];
+
+            // 2) Proses kenaikan / non-aktif siswa
+            $students = \App\Siswa::where('is_active', 'Y')->get();
+            foreach ($students as $siswa) {
+                $jenjang = strtolower($siswa->jenjang);
+                $kelas = strtolower((string)$siswa->tingkat_kelas);
+
+                // SMA kelas 12 -> non-aktif
+                if ($jenjang === 'sma' && $kelas === '12') {
+                    $siswa->is_active = 'N';
+                    $siswa->save();
+                    continue;
+                }
+
+                // Kasus khusus: buat data baru untuk jenjang berikutnya dan non-aktifkan yg lama
+                $key = $jenjang . '|' . $kelas;
+                if (isset($specialPromotions[$key])) {
+                    $target = $specialPromotions[$key];
+                    $new = $siswa->replicate();
+                    unset($new->id); // agar auto-increment bekerja
+                    $new->jenjang = $target['jenjang'];
+                    $new->tingkat_kelas = $target['tingkat_kelas'];
+                    $new->is_active = 'Y';
+                    $new->save();
+
+                    $siswa->is_active = 'N';
+                    $siswa->save();
+                    continue;
+                }
+
+                // Default: naikkan tingkat_kelas satu tingkat
+                if (ctype_digit($kelas)) {
+                    $siswa->tingkat_kelas = (string)(((int)$kelas) + 1);
+                    $siswa->save();
+                } elseif (stripos($kelas, 'tk-a') !== false) {
+                    // contoh tk-a -> tk-b
+                    $siswa->tingkat_kelas = str_ireplace('tk-a', 'tk-b', $kelas);
+                    $siswa->save();
+                } else {
+                    // jika format tidak dikenali, biarkan apa adanya (menghindari modifikasi salah)
+                }
+            }
+
+            // 3) Buat data biaya untuk semua siswa dengan th_ajaran baru
+            $activeStudents = \App\Siswa::where('is_active', 'Y')->get();
+            foreach ($activeStudents as $siswa) {
+                $jenjang = strtolower($siswa->jenjang);
+                $kelas = strtolower((string)$siswa->tingkat_kelas);
+
+                // helper untuk ambil nilai parameter; untuk kelas 6/9/12 gunakan param2
+                $getParamValue = function ($paramName) use ($jenjang, $kelas) {
+                    $q = DB::table('parameter')->where('param', $paramName)->where('param1', $jenjang);
+                    if (in_array($kelas, ['6', '9', '12'])) {
+                        $q->where('param2', $kelas);
+                    }
+                    return $q->value('value') ?? $q->value('param_value') ?? 0;
+                };
+
+                $uang_masuk = $getParamValue('uang_masuk');
+                $spp = $getParamValue('spp');
+                $daftar_ulang = $getParamValue('daftar_ulang');
+                $status_um = 0;
+
+                // Untuk siswa selain kelas 1, 7, dan 10: ambil um_masuk dan status_um dari th_ajaran sebelumnya
+                if (!in_array($kelas, ['1', '7', '10'])) {
+                    $previousData = \App\BiayaSiswa::where('nis', $siswa->nis)
+                        ->where('th_ajaran', $currentTh)
+                        ->first();
+                    
+                    if ($previousData) {
+                        $um_masuk = $previousData->um_masuk;
+                        $status_um = $previousData->status_um ?? $status_um;
+                        $spp = $previousData->spp; // gunakan spp sebelumnya
+                        $uang_masuk = $previousData->uang_masuk; // gunakan uang_masuk sebelumnya
+                    }
+                }
+
+                // Simpan ke model BiayaSiswa (pastikan model fillable sesuai)
+                \App\BiayaSiswa::create([
+                    'nis'           => $siswa->nis,
+                    'jenjang'       => $siswa->jenjang,
+                    'th_ajaran'     => $nextTh,
+                    'um_masuk'      => $um_masuk ?? 0,
+                    'status_um'     => $status_um,
+                    'uang_masuk'    => $uang_masuk,
+                    'spp'           => $spp,
+                    'daftar_ulang'  => $daftar_ulang,
+                ]);
+            }
+
+            // 4) Naikkan angkatan terakhir untuk tiap jenjang
+            $angkatanRows = DB::table('parameter')->where('param', 'angkatan_terakhir')->get();
+            foreach ($angkatanRows as $row) {
+                $current = (int)($row->value ?? $row->param_value ?? 0);
+                DB::table('parameter')->where('id', $row->id)->update(['value' => $current + 1, 'label' => (string)($current + 1)]);
+            }
+
+            DB::commit();
+            echo json_encode(array('status' => true, 'message' => 'Proses kenaikan th_ajaran, promosi siswa, dan pembuatan biaya berhasil.'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            echo json_encode(array('status' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()));
         }
-        $return->total = $total;
-        $return->month = ($data)?$data[0]->max_month:'-';
-        $return->year = ($data)?$data[0]->year:'-';
-        return $return;
-    }
-
-    public function getSalesToko()
-    {
-        $data = Sales::select(DB::raw('SUM(charge_amount) as count, MONTHNAME(sales_date) AS group_date, MAX(updated_date) as last_update'))
-        ->whereRaw("YEAR(sales_date) = '".date('Y')."'")
-        ->groupByRaw('MONTHNAME(sales_date)')
-        ->orderByRaw('MONTH(sales_date) ASC')
-        ->get();
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
-    }
-
-    public function getPurchase()
-    {
-        $data = ItemTransaction::select(DB::raw("SUM(charge_amount) as count, trans_month, MAX(updated_date) as last_update"))
-        ->where("trans_year",date('Y'))
-        ->where('transaction_code','002')
-        ->groupByRaw("trans_month")
-        ->orderByRaw('trans_month ASC')
-        ->get();
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
-    }
-
-    public function getPertumbuhanAnggota()
-    {
-        $data = Anggota::select(DB::raw('COUNT(id) as count,YEAR(join_date) AS group_date'))->groupByRaw('YEAR(join_date)')->get();
-        echo json_encode(array('status' => true, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
     }
 
 }

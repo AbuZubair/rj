@@ -19,49 +19,6 @@
             <div class="card">
               <form class="searchForm">
                 <div class="card-header">
-                  <h4>Potongan Bulanan</h4>
-                </div>
-                <div class="card-body row">
-                  <div class="col-sm-12 align-items-center">
-                    <label class="col-sm-12 col-form-label">{{ __('Bulan') }}</label>
-                    <div class="col-sm-12">
-                      <div class="form-group">                      
-                        <select class="form-control" name="monthPotongan" id="monthPotongan">
-                          <option value="" disabled selected>Select your option</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-12 align-items-center">
-                    <label class="col-sm-12 col-form-label">{{ __('Tahun') }}</label>
-                    <div class="col-sm-12">
-                      <div class="form-group">                      
-                        <select class="form-control" name="yearPotongan" id="yearPotongan">
-                          <option value="" disabled selected>Select your option</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-12 align-items-center thin-text">
-                    <span class="col-sm-12 d-flex info-sec">
-                      <p>Potongan terakhir: &nbsp; </p>
-                      <span class="last-potongan"></span>
-                      <p class="potongan-terakhir ml-2">| Pada tgl: &nbsp; </p>
-                      <span class="tgl-potongan-terakhir"></span>
-                    </span>
-                  </div>
-                </div> 
-              </form>
-              <div class="card-footer" style="justify-content: end !important;">
-                <button class="btn btn-primary" onClick="submit('Potongan Bulanan','{{url('finance/submit-potongan')}}')" >Submit</button>
-              </div>           
-            </div> 
-          </div>
-
-          <div class="col-md-6">
-            <div class="card">
-              <form class="searchForm">
-                <div class="card-header">
                   <h4>Closing Bulanan</h4>
                 </div>
                 <div class="card-body row">
@@ -96,18 +53,16 @@
                 </div> 
               </form>
               <div class="card-footer" style="justify-content: end !important;">
-                <button class="btn btn-primary" onClick="submit('Closing Bulanan','{{url('finance/submit-closing')}}')" >Submit</button>
+                <button class="btn btn-primary" onClick="submit(0,'{{url('finance/submit-closing')}}')" >Submit</button>
               </div>           
             </div> 
           </div>
-        </div>
-         
-        <div class="row">
+
           <div class="col-md-6">
             <div class="card">
               <form class="searchForm">
                 <div class="card-header">
-                  <h4>Closing Tahunan</h4>
+                  <h4>Tutup Buku</h4>
                 </div>
                 <div class="card-body row">
                   <div class="col-sm-12 align-items-center">
@@ -120,60 +75,23 @@
                       </div>
                     </div>
                   </div>
+                  <div class="col-sm-12 align-items-center thin-text">
+                    <span class="col-sm-12 d-flex">
+                      <p>Closing terakhir: &nbsp; </p>
+                      <span class="year-last-closing"></span>
+                    </span>
+                  </div>   
                 </div> 
               </form>
               <div class="card-footer" style="justify-content: start !important;">
                 <div class="col-sm-12">
                   <button class="btn btn-primary" onClick="yearClosing()" >Submit</button>
                 </div>
-              </div>      
-              <div class="col-sm-12 align-items-center thin-text">
-                <span class="col-sm-12 d-flex">
-                  <p>Closing terakhir: &nbsp; </p>
-                  <span class="year-last-closing"></span>
-                </span>
-              </div>     
+              </div>                        
             </div> 
           </div>
-          <div class="col-md-6">
-            <div class="card">
-              <form class="searchForm">
-                <div class="card-header">
-                  <h4>Hitung HPP</h4>
-                </div>
-                <div class="card-body row" style="display:none">
-                  <div class="col-sm-12 align-items-center">
-                    <label class="col-sm-12 col-form-label">{{ __('Bulan') }}</label>
-                    <div class="col-sm-12">
-                      <div class="form-group">                      
-                        <select class="form-control" name="monthHpp" id="monthHpp">
-                          <option value="" disabled selected>Select your option</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-12 align-items-center">
-                    <label class="col-sm-12 col-form-label">{{ __('Tahun') }}</label>
-                    <div class="col-sm-12">
-                      <div class="form-group">                      
-                        <select class="form-control" name="yearHpp" id="yearHpp">
-                          <option value="" disabled selected>Select your option</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div> 
-              </form>
-              <div class="card-footer" style="justify-content: start !important;">
-                <div class="col-sm-12">
-                  <button class="btn btn-primary" onClick="submit('Hpp Bulanan','{{url('finance/submit-hpp')}}')" >Hitung</button>
-                </div>
-              </div>           
-            </div>
-          </div>
         </div>
-        
-                
+                         
       </div>
     </div>
   </div>
@@ -189,31 +107,16 @@
   $(document).ready(function(){
        
     getYearList();
-    getLastPotongan();
     getLastClosing();
     getLastYearClosing();
 
     for(var i=0;i<month.length;i++){
-      $('#monthPotongan').append($('<option>', { 
-        value: month[i],
-        text : month[i] 
-      }));
-      $('#monthPotongan').select2();
-      $('#monthPotongan').val(month[mth]).trigger("change");
-
       $('#monthClosing').append($('<option>', { 
         value: month[i],
         text : month[i] 
       }));
       $('#monthClosing').select2();
       $('#monthClosing').val(month[mth]).trigger("change");
-
-      $('#monthHpp').append($('<option>', { 
-        value: month[i],
-        text : month[i] 
-      }));
-      $('#monthHpp').select2();
-      $('#monthHpp').val(month[mth]).trigger("change");
     }
   });  
 
@@ -221,26 +124,12 @@
     //get list year from 2016 until current year plus one
     var yearList = [];
     for(var i=year-3;i<=year;i++){
-      $('#yearPotongan').append($('<option>', { 
-        value: i,
-        text : i 
-      }));
-      $('#yearPotongan').select2();
-      $('#yearPotongan').val(year).trigger("change");
-
       $('#yearClosing').append($('<option>', { 
         value: i,
         text : i 
       }));
       $('#yearClosing').select2();
       $('#yearClosing').val(year).trigger("change");
-
-      $('#yearHpp').append($('<option>', { 
-        value: i,
-        text : i 
-      }));
-      $('#yearHpp').select2();
-      $('#yearHpp').val(year).trigger("change");
 
       $('#yearsClosing').append($('<option>', { 
         value: i,
@@ -250,54 +139,6 @@
       $('#yearsClosing').val(year).trigger("change");
     }
  
-  }
-
-  function getLastPotongan() {
-    return new Promise((resolve,reject) => {
-      $.ajax({
-        url : '{{url("finance/get-last-potongan")}}',
-        type: 'GET',
-        data: '',
-        success: function(data) {
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status){
-            var data = jsonResponse.data
-            if(data){
-              if(parseInt(data.month) == mth+1 && data.year == year){
-                if(mth<11){
-                  $('#monthPotongan').val(month[mth+1]).trigger("change");
-                }else{
-                  $('#monthPotongan').val(month[0]).trigger("change");
-                  $('#yearPotongan').append($('<option>', { 
-                    value: year+1,
-                    text : year+1 
-                  }));
-                  $('#yearPotongan').select2();
-                  $('#yearPotongan').val(year+1).trigger("change");
-                }
-                
-              }
-            }
-            $('.last-potongan').text((data)?`${month[parseInt(data.month)-1]}-${data.year}`:'-')
-            if(!data){
-              $('.potongan-terakhir').hide()
-            }else{
-              $('.potongan-terakhir').show()
-              $('.tgl-potongan-terakhir').text((new Date(data.updated_date)).toLocaleString("id-ID"))
-            }
-            resolve()
-          }else{
-            reject()
-            showNotification(jsonResponse.message, 'danger');
-          }
-        },
-        error: function(xhr) { // if error occured
-          var msg = xhr.responseJSON.message
-          showNotification(msg,'danger')
-          reject()
-        },
-      })
-    }) 
   }
 
   function getLastClosing() {
@@ -376,12 +217,16 @@
     }) 
   }
 
-  function submit(title,url) {
-    let month = (title.includes('Potongan'))?'#monthPotongan':(title.includes('Closing'))?'#monthClosing':'#monthHpp';
-    let year = (title.includes('Potongan'))?'#yearPotongan':(title.includes('Closing'))?'#yearClosing':'#yearHpp';
+  function submit(type,url) {
+    let month = (type === 0)?'#monthClosing':'';
+    let year = (type === 0)?'#yearClosing':'';
     if(!$(month).val() || !$(year).val()){
       showNotification('Silahkan pilih Bulan dan Tahun', 'danger');
       return false;
+    }
+    let title = null;
+    if(type === 0){
+      title = "Closing Bulanan"
     }
     $.confirm({
       title: title,
@@ -405,9 +250,7 @@
                 var jsonResponse = JSON.parse(data);
                 if(jsonResponse.status){
                   showNotification(jsonResponse.message,'success');
-                  if(title.includes('Potongan')){
-                    getLastPotongan()
-                  }else if(title.includes('Closing')){
+                  if(type === 0){                   
                     getLastClosing()
                   }
                 }else{
@@ -430,7 +273,7 @@
 
   function yearClosing() {
     $.confirm({
-      title: "Closing Tahunan",
+      title: "Tutup Buku Tahunan",
       content: `Apakah anda yakin?`,
       buttons: {
           confirm: function () {

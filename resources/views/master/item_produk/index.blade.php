@@ -248,7 +248,7 @@
       }
     }); 
     $.ajax({
-      url : "{{url('master/product-import')}}",
+      url : "{{url('master/staff-import')}}",
       type: 'POST',
       data: form_data,
       contentType:false,

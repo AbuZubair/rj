@@ -78,7 +78,7 @@
               name: 'coa_name'
             },
             {data:null,render:function(data,type,full,meta){
-                return '<button class="btn btn-sm btn-success" onClick="edit('+data.id+')">Edit</button>';                    
+                return '<button class="btn btn-sm btn-success" onClick="edit('+data.id+')"><i class="material-icons">edit</i></button>';                    
               }
             },
         ],
