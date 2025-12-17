@@ -110,7 +110,7 @@ Route::group(['middleware' => ['auth','web']], function () {
     Route::get('iuran/dropdown-params', ['as' => 'iuran.dropdown-param', 'uses' => 'IuranController@getParams'])->middleware('ajax-call');
     Route::get('iuran/detail/{id}', ['as' => 'iuran.detail', 'uses' => 'IuranController@getDetail'])->middleware('ajax-call');
     Route::get('iuran/get-current-tahun-ajaran', ['as' => 'iuran.get-current-tahun-ajaran', 'uses' => 'IuranController@getTahunAjaran'])->middleware('ajax-call');
-    Route::get('iuran/print-bukti/{nis}', ['as' => 'iuran.print-bukti', 'uses' => 'IuranController@printBukti']);
+    Route::get('iuran/print-bukti/{id}', ['as' => 'iuran.print-bukti', 'uses' => 'IuranController@printBukti']);
 
     Route::get('trans', ['as' => 'trans', 'uses' => 'TransController@index']);
     Route::get('trans/create', ['as' => 'trans.create', 'uses' => 'TransController@add']);

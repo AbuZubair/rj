@@ -265,10 +265,10 @@ class IuranController extends Controller
         echo json_encode(array('status' => 200, 'message' => 'Prosess berhasil dilakukan', 'data' => $data));
     }
 
-    public function printBukti($nis)
+    public function printBukti($id)
     {
         // Load iuran with siswa relation
-        $data = Iuran::with('siswa')->where('nis', $nis)->firstOrFail();
+        $data = Iuran::with('siswa')->where('id', $id)->firstOrFail();
 
         // Receipt number: [TH_AJARAN digits][id padded to 5]
         $thDigits = preg_replace('/\D/', '', $data->th_ajaran);
@@ -308,6 +308,17 @@ class IuranController extends Controller
 
         // Petugas / pencetak
         $petugas = config('app.bendahara', 'Admin');
+
+        // Generate type pembayaran description
+        // uang_masuk -> Uang Masuk
+        // daftar_ulang -> Daftar Ulang
+        $typeMap = [
+            'uang_masuk' => 'Uang Masuk',
+            'daftar_ulang' => 'Daftar Ulang',
+            'spp' => 'SPP Bulanan',
+        ];
+
+        $typePembayaran = $typeMap[$data->type] ?? ucfirst($data->type);
 
         // Move receipt number below header (right aligned) and replace flex layout with table for compatibility
         $html = '
@@ -381,7 +392,7 @@ class IuranController extends Controller
                     </tr>
                 </table>
 
-                <p>Uang sejumlah <span class="amount">Rp ' . htmlspecialchars($nominal) . ' (' . htmlspecialchars($terbilang) . ')</span> untuk Pembayaran: ' . htmlspecialchars($data->type . ($data->type === "spp" ? ' Bulanan' : '')) . ' siswa ' . htmlspecialchars($nama) . ' (' . htmlspecialchars($nis) . ')</p>
+                <p>Uang sejumlah <span class="amount">Rp ' . htmlspecialchars($nominal) . ' (' . htmlspecialchars($terbilang) . ')</span> untuk Pembayaran: ' .  $typePembayaran . ' siswa ' . htmlspecialchars($nama) . ' (' . htmlspecialchars($nis) . ')</p>
 
                 <div class="keterangan" style="width: auto; display: inline-block;">
                     <strong>Keterangan:</strong>

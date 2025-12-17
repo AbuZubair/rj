@@ -294,7 +294,7 @@
                 if(data.type == 'spp'){
                   html += '<button class="btn btn-sm btn-info" onClick="view('+data.id+')"><i class="material-icons">visibility</i></button>';
                 }
-                html += '<button class="btn btn-sm btn-primary" onClick="printReceipt('+data.nis+')"><i class="material-icons">print</i></button>';
+                html += '<button class="btn btn-sm btn-primary" onClick="printReceipt('+data.id+')"><i class="material-icons">print</i></button>';
                 html += '</div>'
                 return html;
               }
@@ -335,8 +335,8 @@
     $('#tingkat_kelas').val(siswa.tingkat_kelas);
   }
 
-  function printReceipt(nis){
-    window.open('{{url("iuran/print-bukti")}}/'+nis, '_blank');
+  function printReceipt(id){
+    window.open('{{url("iuran/print-bukti")}}/'+id, '_blank');
   }
 
   function getDropdown(){
