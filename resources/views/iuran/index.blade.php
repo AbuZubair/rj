@@ -154,8 +154,14 @@
           };
         },
         processResults: function (data, params) {
+          var mappedData = $.map(data.data, function (item) {
+            item.id = item.nis; // Assign your custom ID field to 'id'
+            return item;
+          });
+
+          // Return the results in the required format
           return {
-            results: data.data
+            results: mappedData
           };
         },
         cache: true

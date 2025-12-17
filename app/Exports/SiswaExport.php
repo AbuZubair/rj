@@ -67,7 +67,7 @@ class SiswaExport implements
             'bidang_olahraga',
             'bidang_lainnya',
             'program_unggulan',
-            'join_date',
+            'tahun_masuk',
             'is_active'
         );
     }
@@ -76,7 +76,7 @@ class SiswaExport implements
     {
         return [
             $item->nis,
-            $item->join_date,
+            $item->tahun_masuk,
             $item->email,
             $item->status_pendaftaran,
             $item->jenjang,
@@ -119,7 +119,7 @@ class SiswaExport implements
     {
         return [
             'nis',
-            'join_date',
+            'tahun_masuk',
             'email',
             'status_pendaftaran',
             'jenjang',

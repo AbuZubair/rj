@@ -16,7 +16,7 @@
       </div>
       
       <div class="form-row">
-        <div class="form-group col-md-6">
+        <div class="form-group col-md-4">
           <label class="col-sm-6 col-form-label">{{ __('Jenjang*') }}</label>
           <div class="col-sm-12">
             <div class="form-group{{ $errors->has('jenjang') ? ' has-danger' : '' }} position-relative jenjang-container">
@@ -26,11 +26,21 @@
             </div>
           </div>
         </div>
-        <div class="form-group col-md-6">
+        <div class="form-group col-md-4">
           <label class="col-sm-12 col-form-label">{{ __('Tingkat Kelas*') }}</label>
           <div class="col-sm-12">
             <div class="form-group{{ $errors->has('tingkat_kelas') ? ' has-danger' : '' }}">
               <select class="form-control" name="tingkat_kelas" id="tingkat_kelas" required>
+                <option value="" disabled selected>Select your option</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group col-md-4">
+          <label class="col-sm-12 col-form-label">{{ __('Tahun Masuk*') }}</label>
+          <div class="col-sm-12">
+            <div class="form-group{{ $errors->has('tahun_masuk') ? ' has-danger' : '' }}">
+              <select class="form-control" name="tahun_masuk" id="tahun_masuk" required>
                 <option value="" disabled selected>Select your option</option>
               </select>
             </div>

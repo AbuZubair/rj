@@ -40,7 +40,13 @@ class SiswaImport implements
                 'label' => $jenjang
             ]);
         }
-         if(BiayaSiswa::where('nis', $row['nis'])->where('jenjang', $jenjang)->count() == 0){
+
+        // If $row['nis'] is empty, generate it from Siswa::getLatestNis
+        if (empty($row['nis']) || is_null($row['nis'])) {
+            $row['nis'] = Siswa::getLatestNis($jenjang, $row['tingkat_kelas']);
+        }
+
+        if(BiayaSiswa::where('nis', $row['nis'])->where('jenjang', $jenjang)->count() == 0){
             $included = ['uang_masuk','spp'];
             $query = DB::table('parameter')
                 ->whereIn('parameter.param',$included)
@@ -65,16 +71,37 @@ class SiswaImport implements
                 $data->save();
             }
         }
+
+        // Check if tanggal_lahir memakai format dibawah ini: 
+        // - 1 Juli 2020
+        // - 20-11-2017
+        // - 2017-11-20
+        // If so, convert to DateTime object
+        $tanggal_lahir = $row['tanggal_lahir'];
+        if(is_string($tanggal_lahir)) {
+            $tanggal_lahir = (new Shared())->formatExcelDate($tanggal_lahir);
+        }
+
+        $tanggal_lahir_ayah = $row['tanggal_lahir_ayah'];
+        if (is_string($tanggal_lahir_ayah)) {
+            $tanggal_lahir_ayah = (new Shared())->formatExcelDate($tanggal_lahir_ayah);
+        }
+
+        $tanggal_lahir_ibu = $row['tanggal_lahir_ibu'];
+        if (is_string($tanggal_lahir_ibu)) {
+            $tanggal_lahir_ibu = (new Shared())->formatExcelDate($tanggal_lahir_ibu);
+        }
+            
         return new Siswa([
             'nis' => $row['nis'],
-            'join_date' => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['join_date']),
+            'tahun_masuk' => $row['tahun_masuk'],
             'email' => $row['email'],
             'status_pendaftaran' => $row['status_pendaftaran'],
             'jenjang' => $jenjang,
             'tingkat_kelas' => $row['tingkat_kelas'],
             'fullname' => $row['fullname'],
             'tempat_lahir' => $row['tempat_lahir'],
-            'tanggal_lahir' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir']),
+            'tanggal_lahir' => $tanggal_lahir,
             'nik' => $row['nik'],
             'jenis_kelamin' => $row['jenis_kelamin'],
             'urutan_anak_ke' => $row['urutan_anak_ke'],
@@ -86,11 +113,11 @@ class SiswaImport implements
             'tinggal_bersama' => $row['tinggal_bersama'],
             'nama_ayah' => $row['nama_ayah'],
             'tempat_lahir_ayah' => $row['tempat_lahir_ayah'],
-            'tanggal_lahir_ayah' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir_ayah']),
+            'tanggal_lahir_ayah' => $tanggal_lahir_ayah,
             'pekerjaan_ayah' => $row['pekerjaan_ayah'],
             'nama_ibu' => $row['nama_ibu'],
             'tempat_lahir_ibu' => $row['tempat_lahir_ibu'],
-            'tanggal_lahir_ibu' =>  \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_lahir_ibu']),
+            'tanggal_lahir_ibu' => $tanggal_lahir_ibu,
             'pekerjaan_ibu' => $row['pekerjaan_ibu'],
             'penghasilan_orangtua' => $row['penghasilan_orangtua'],
             'phone' => $row['phone'],
@@ -102,7 +129,7 @@ class SiswaImport implements
             'bidang_olahraga' => $row['bidang_olahraga'],
             'bidang_lainnya' => $row['bidang_lainnya'],
             'program_unggulan' => $row['program_unggulan'],
-            'spp_terakhir' => $row['spp_terakhir'],
+            'spp_terakhir' => $row['spp_terakhir'] ?? null,
             'is_active' => $row['is_active']
         ]);
     }
@@ -110,8 +137,8 @@ class SiswaImport implements
     public function rules(): array
     {
         return [
-            '*.nis' => ['required','unique:siswa,nis'],
-            '*.join_date' => ['required'],
+            '*.nis' => ['nullable','unique:siswa,nis'],
+            '*.tahun_masuk' => ['required'],
             '*.nisn' => ['nullable','unique:siswa,nisn']
         ];
     }

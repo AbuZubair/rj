@@ -58,7 +58,7 @@ class Siswa extends Model
         'bidang_olahraga',
         'bidang_lainnya',
         'program_unggulan',
-        'join_date',
+        'tahun_masuk',
         'relieve_date',
         'tabungan',
         'is_tabungan_monthly',
@@ -119,7 +119,9 @@ class Siswa extends Model
         $angkatanKe = str_pad($lastAngkatan + 1, 2, '0', STR_PAD_LEFT);
 
         // Find latest order number for this jenjang, tahun masuk, angkatan, tingkat
-        $nisPrefix = $jenjangCode . $tahunMasuk . $angkatanKe;
+        // Use "dot" as separator for clarity
+
+        $nisPrefix = $jenjangCode . '.' . $tahunMasuk . '.' . $angkatanKe;
 
         $latestNis = DB::table('siswa')
             ->where('jenjang', $jenjang)
@@ -136,6 +138,6 @@ class Siswa extends Model
 
         $orderNumberStr = str_pad($orderNumber, 3, '0', STR_PAD_LEFT);
 
-        return $nisPrefix . $orderNumberStr;
+        return $nisPrefix . '.' . $orderNumberStr;
     }
 }

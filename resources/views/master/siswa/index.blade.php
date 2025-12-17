@@ -167,6 +167,18 @@
 
     getDropdown();
 
+    // Generate tahun masuk options
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 10; // Adjust the range as needed
+    for (let year = startYear; year <= currentYear; year++) {
+      $('#tahun_masuk').append($('<option>', { 
+        value: year,
+        text : year 
+      }));
+    }
+    $('#tahun_masuk').select2();
+
+
     $('#searchStatus').select2();
     $('#searchTingkat').select2();
 
@@ -290,7 +302,7 @@
             {data:null,render:function(data,type,full,meta){
                 let html = `<button class="btn btn-sm btn-success" onClick="edit(${data.id})"><i class="material-icons">edit</i></button>`;
                 if(data.is_active === 'Y'){
-                  html += `<button class="btn btn-sm btn-info" onClick="openBiaya(${data.nis})"><i class="material-icons mr-1">money</i>Biaya</button>`;
+                  html += `<button class="btn btn-sm btn-info" onClick="openBiaya('${data.nis}')"><i class="material-icons mr-1">money</i>Biaya</button>`;
                 }                
                 return html;                
               }
@@ -428,7 +440,7 @@
 
   function openBiaya(nis) {
     $.ajax({
-      url: '{{ url("master/kesiswaan/biaya") }}/' + nis,
+      url: '{{ url("master/kesiswaan/biaya") }}/' + encodeURIComponent(nis),
       type: 'GET',
       data: null,
       success: function(data) {

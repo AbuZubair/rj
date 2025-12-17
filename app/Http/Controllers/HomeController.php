@@ -61,6 +61,7 @@ class HomeController extends Controller
 
             // 2) Proses kenaikan / non-aktif siswa
             $students = \App\Siswa::where('is_active', 'Y')->get();
+            
             foreach ($students as $siswa) {
                 $jenjang = strtolower($siswa->jenjang);
                 $kelas = strtolower((string)$siswa->tingkat_kelas);

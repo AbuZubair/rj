@@ -110,7 +110,7 @@ class IuranController extends Controller
 
     private function processBiayaAndDetial($data){
         // Get reference biaya from biaya_siswa
-        $query_biaya = BiayaSiswa::where('nis', $data->nis)->where('jenjang', $data->jenjang);
+        $query_biaya = BiayaSiswa::where('nis', $data->nis)->where('jenjang', $data->jenjang)->orderByDesc('th_ajaran');
         if($data->type === 'spp'){
             $th_ajaran = $this->sharedService->getTahunAjaran();
             $biaya = $query_biaya->where('th_ajaran', $th_ajaran)->first();
@@ -129,14 +129,10 @@ class IuranController extends Controller
                 $month = ($lastDetail->month % 12) + 1; // Increment month, reset to 1 if it exceeds 12
                 $year = $lastDetail->year + floor($lastDetail->month / 12); // Increment year if month exceeds 12
             }else{
-                // Get month and year from join_date Siswa
+                // Set year to tahun_masuk and month to July
                 $siswa = Siswa::where('nis', $data->nis)->where('is_active', 'Y')->first();
-                // Increment by 1 month and reset to 1 if it exceeds 12
-                // make sure to transform join_date to a DateTime object
-                $new = \Carbon\Carbon::parse($siswa->join_date);
-                // Set month and year based on join_date   
-                $month = ($new->format('m') % 12) + 1; // Increment month, reset to 1 if it exceeds 12
-                $year = $new->format('Y') + floor($month / 12);
+                $year = $siswa->tahun_masuk;
+                $month = 7; // July
             }
             for($i = 0; $i < $count; $i++){
                 $last_spp = $this->addDetail($data, $biaya->spp, $month, $year);

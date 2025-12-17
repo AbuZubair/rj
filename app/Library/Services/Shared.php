@@ -123,4 +123,22 @@ class Shared
         }
     }
 
+    public function formatExcelDate($tgl){
+        $tgl = trim($tgl);
+        if (preg_match('/^\d+\s+\w+\s+\d+$/', $tgl)) {
+            // Format nama bulan Indonesia: 1 Juli 2020
+            $tgl = \DateTime::createFromFormat('j F Y', $tgl);
+        } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $tgl)) {
+            // Format: 20-11-2017
+            $tgl = \DateTime::createFromFormat('d-m-Y', $tgl);
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl)) {
+            // Format: 2017-11-20
+            $tgl = \DateTime::createFromFormat('Y-m-d', $tgl);
+        } else {
+            // Try to parse as Excel date number
+            $tgl = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl);
+        }
+        return $tgl;
+    }
+
 }

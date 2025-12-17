@@ -75,19 +75,16 @@ class SiswaController extends Controller
                 $data = Siswa::find($request->input('id'));
                 $data->updated_by = Auth::user()->getUsername();
                 if($request->input('is_active') == 'N')$data->relieve_date = date('Y-m-d');
-                if($request->input('is_active') == 'Y' && $data->is_active == 'N'){
-                    $data->join_date = date('Y-m-d');
-                }
             }else{
                 $data->nis = Siswa::getLatestNis($request->input('jenjang'), $request->input('tingkat_kelas'));
                 $data->created_by = Auth::user()->getUsername();
-                $data->join_date = $request->input('join_date');
             }
             if($request->hasFile('avatar')){
                 $avatarName = time().'.'.$request->file('avatar')->extension();
                 $request->file('avatar')->move(public_path('avatars'), $avatarName);
                 $data->avatar = $avatarName;
             }
+            $data->tahun_masuk = $request->input('tahun_masuk');
             $data->email = $request->input('email');
             $data->status_pendaftaran = $request->input('status_pendaftaran');
             $data->jenjang = $request->input('jenjang');
