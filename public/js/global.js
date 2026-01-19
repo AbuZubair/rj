@@ -1041,7 +1041,14 @@ function uploadItem(url, callback) {
         error: function (xhr) {
             // if error occured
             $.notifyClose();
-            var msg = xhr.responseJSON.message;
+            let msg = xhr.responseJSON.message;
+            if(xhr.responseJSON.errors && xhr.responseJSON.errors.length > 0){
+                msg = "<ul>";
+                $.each(xhr.responseJSON.errors, function(key, val){
+                    msg += "<li>" + val + "</li>";
+                });
+                msg += "</ul>";
+            }
             showNotification(msg, "danger", 3000);
         },
     });

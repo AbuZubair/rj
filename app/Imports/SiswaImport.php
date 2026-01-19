@@ -13,11 +13,15 @@ use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Events\AfterImport;
 use Maatwebsite\Excel\Validators\Failure;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Throwable;
 
 class SiswaImport implements
@@ -25,7 +29,9 @@ class SiswaImport implements
     WithHeadingRow,
     SkipsOnError,
     WithValidation,
-    SkipsOnFailure
+    WithMultipleSheets,
+    SkipsOnFailure,
+    SkipsEmptyRows
 {
     use Importable, SkipsErrors, SkipsFailures;
 
@@ -78,20 +84,24 @@ class SiswaImport implements
         // - 2017-11-20
         // If so, convert to DateTime object
         $tanggal_lahir = $row['tanggal_lahir'];
-        if(is_string($tanggal_lahir)) {
+        if(is_numeric($tanggal_lahir)) {
             $tanggal_lahir = (new Shared())->formatExcelDate($tanggal_lahir);
         }
 
         $tanggal_lahir_ayah = $row['tanggal_lahir_ayah'];
-        if (is_string($tanggal_lahir_ayah)) {
+        if (is_numeric($tanggal_lahir_ayah)) {
             $tanggal_lahir_ayah = (new Shared())->formatExcelDate($tanggal_lahir_ayah);
         }
 
         $tanggal_lahir_ibu = $row['tanggal_lahir_ibu'];
-        if (is_string($tanggal_lahir_ibu)) {
+        if (is_numeric($tanggal_lahir_ibu)) {
             $tanggal_lahir_ibu = (new Shared())->formatExcelDate($tanggal_lahir_ibu);
         }
-            
+
+        if (isset($row['nik'])) {
+            $row['nik'] = (string) $row['nik'];
+        }
+
         return new Siswa([
             'nis' => $row['nis'],
             'tahun_masuk' => $row['tahun_masuk'],
@@ -130,7 +140,7 @@ class SiswaImport implements
             'bidang_lainnya' => $row['bidang_lainnya'],
             'program_unggulan' => $row['program_unggulan'],
             'spp_terakhir' => $row['spp_terakhir'] ?? null,
-            'is_active' => $row['is_active']
+            'is_active' => $row['is_active'] ?? 'Y'
         ]);
     }
 
@@ -147,13 +157,21 @@ class SiswaImport implements
     {
         return [
             '*.nis.required' => 'NIS is required.',
-            '*.nis.unique' => 'NIS must be unique.',
-            '*.nisn.unique' => 'NISN must be unique.'
+            '*.nis.unique' => 'NIS tidak boleh sama.',
+            '*.nisn.unique' => 'NISN tidak boleh sama.'
         ];
     }
 
     public static function afterImport(AfterImport $event)
     {
+    }
+
+    public function sheets(): array
+    {
+        return [
+            // Link the first worksheet (index 0) to this same import class
+            0 => $this,
+        ];
     }
 
 }
